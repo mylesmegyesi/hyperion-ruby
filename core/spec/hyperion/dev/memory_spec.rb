@@ -10,14 +10,8 @@ describe Hyperion::Dev::Memory do
     Hyperion::Core
   end
 
-  it 'saves a hash with kind as a string and returns it' do
-    record = ds.save({kind: "testing", name: "ann"})
-    record[:kind].should == "testing"
-    record[:name].should == "ann"
-  end
-
-  it 'saves a hash with kind as a symbol and returns it' do
-    record = ds.save({kind: :testing, name: "ann"})
+  it 'saves a hash and returns it' do
+    record = ds.save({kind: 'testing', name: 'ann'})
     record[:kind].should == 'testing'
     record[:name].should == 'ann'
   end
@@ -48,17 +42,8 @@ describe Hyperion::Dev::Memory do
     unique_keys.length.should == 10
   end
 
-  it 'can save many records with kind as string' do
+  it 'can save many records' do
     records = ds.save_many(ten_testing_records)
-    records.length.should == 10
-    found_records = ds.find_by_kind('testing')
-    found_records.length.should == 10
-    names = found_records.map { |record| record[:name] }
-    names.should == (1..10).to_a.map { |i| i.to_s }
-  end
-
-  it 'can save many records with kind as symbol' do
-    records = ds.save_many(ten_testing_records(:testing))
     records.length.should == 10
     found_records = ds.find_by_kind('testing')
     found_records.length.should == 10
