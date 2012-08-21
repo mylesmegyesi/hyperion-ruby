@@ -1,4 +1,6 @@
-source 'https://rubygems.org'
+source :rubygems
+
+gem 'rspec'
 
 # Specify your gem's dependencies in hyperion-core.gemspec
 gemspec
