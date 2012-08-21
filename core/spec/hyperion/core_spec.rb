@@ -95,14 +95,14 @@ describe Hyperion::Core do
       end
 
       context 'record formatting on save' do
-        it_behaves_like 'record formatting', lambda { |record|
+        include_examples 'record formatting', lambda { |record|
           Hyperion::Core.save(record)
           Hyperion::Core.datastore.saved_records.first
         }
       end
 
       context 'record formatting on return from datastore' do
-        it_behaves_like 'record formatting', lambda {|record|
+        include_examples 'record formatting', lambda {|record|
           Hyperion::Core.datastore.returns = [[record]]
           Hyperion::Core.save({})
         }
@@ -112,17 +112,36 @@ describe Hyperion::Core do
     context 'save many' do
 
       context 'record formatting on save' do
-        it_behaves_like 'record formatting', lambda { |record|
+        include_examples 'record formatting', lambda { |record|
           Hyperion::Core.save_many([record])
           Hyperion::Core.datastore.saved_records.first
         }
       end
 
       context 'record formatting on return from datastore' do
-        it_behaves_like 'record formatting', lambda { |record|
+        include_examples 'record formatting', lambda { |record|
           Hyperion::Core.datastore.returns = [[record]]
           Hyperion::Core.save_many([{}]).first
         }
+      end
+    end
+
+    shared_examples_for 'field formatting' do |actor|
+
+      {
+        'field' => :field,
+        'Field' => :field,
+        'FieldOne' => :field_one,
+        'SomeBigAttr' => :some_big_attr,
+        :SomeBigAttr => :some_big_attr,
+        'one-two-three' => :one_two_three,
+        'one two three' => :one_two_three
+      }.each_pair do |field, result|
+
+        it "parses #{field} into #{result}" do
+          actor.call(field).should == result
+        end
+
       end
     end
 
@@ -160,22 +179,10 @@ describe Hyperion::Core do
         end
 
         context 'field' do
-
-          {
-            'field' => :field,
-            'Field' => :field,
-            'FieldOne' => :field_one,
-            'SomeBigAttr' => :some_big_attr,
-            :SomeBigAttr => :some_big_attr,
-            'one-two-three' => :one_two_three,
-            'one two three' => :one_two_three
-          }.each_pair do |field, result|
-
-            it "parses #{field} into #{result}" do
-              do_find([field, '=', 0]).field.should == result
-            end
-
-          end
+          include_examples 'field formatting', lambda { |field|
+            Hyperion::Core.find_by_kind('kind', filters: [[field, '=', 0]])
+            Hyperion::Core.datastore.queries.first.filters.first.field
+          }
         end
 
         context 'operator' do
@@ -213,6 +220,47 @@ describe Hyperion::Core do
           end
 
         end
+      end
+
+      context 'parses sorts' do
+
+        def do_find(sort)
+          core.find_by_kind('kind', sorts: [sort])
+          query = fake_ds.queries.first
+          query.sorts.first
+        end
+
+        context 'field' do
+          include_examples 'field formatting', lambda { |field|
+            Hyperion::Core.find_by_kind('kind', sorts: [[field, 'desc']])
+            Hyperion::Core.datastore.queries.first.sorts.first.field
+          }
+        end
+
+        context 'order' do
+          {
+            'desc' => :desc,
+            :desc  => :desc,
+            'asc'  => :asc,
+            :asc   => :asc
+          }.each_pair do |order, result|
+
+            it "parses #{order} into #{result}" do
+              do_find([:attr, order]).order.should == result
+            end
+
+          end
+        end
+      end
+
+      it 'passes limit to the query' do
+        core.find_by_kind('kind', limit: 1)
+        fake_ds.queries.first.limit.should == 1
+      end
+
+      it 'passes offset to the query' do
+        core.find_by_kind('kind', offset: 10)
+        fake_ds.queries.first.offset.should == 10
       end
     end
   end

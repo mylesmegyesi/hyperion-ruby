@@ -1,5 +1,6 @@
 require 'hyperion/query'
 require 'hyperion/filter'
+require 'hyperion/sort'
 
 module Hyperion
   class Core
@@ -27,7 +28,8 @@ module Hyperion
       def find_by_kind(kind, args={})
         kind = snake_case(kind.to_s)
         filters = build_filters(args[:filters])
-        query = Query.new(kind, filters)
+        sorts = build_sorts(args[:sorts])
+        query = Query.new(kind, filters, sorts, args[:limit], args[:offset])
         datastore.find(query)
       end
 
@@ -39,6 +41,18 @@ module Hyperion
           field = format_field(field)
           Filter.new(field, operator, value)
         end
+      end
+
+      def build_sorts(sorts)
+        (sorts || []).map do |(field, order)|
+          field = format_field(field)
+          order = parse_order(order)
+          Sort.new(field, order)
+        end
+      end
+
+      def parse_order(order)
+        order.to_sym
       end
 
       def parse_operator(operator)
