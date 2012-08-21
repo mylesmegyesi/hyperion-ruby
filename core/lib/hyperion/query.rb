@@ -1,9 +1,10 @@
 module Hyperion
   class Query
-    attr_reader :kind
+    attr_reader :kind, :filters
 
-    def initialize(kind)
+    def initialize(kind, filters)
       @kind = kind
+      @filters = filters
     end
 
   end

@@ -2,16 +2,22 @@ require 'hyperion/core'
 
 class FakeDatastore
 
-  attr_accessor :saved_records, :returns
+  attr_accessor :saved_records, :queries, :returns
 
   def initialize
     @saved_records = []
     @returns = []
+    @queries = []
   end
 
   def save(records)
     @saved_records += records
-    returns.shift
+    returns.shift || []
+  end
+
+  def find(query)
+    @queries << query
+    returns.shift || []
   end
 
 end
@@ -63,15 +69,14 @@ describe Hyperion::Core do
   end
 
   context 'with fake datastore' do
+    attr_reader :fake_ds
+
     before :each do
       @fake_ds = FakeDatastore.new
       core.datastore = @fake_ds
     end
 
     context 'save' do
-      before :each do
-        core.datastore.returns << []
-      end
 
       it 'saves a record' do
         record = {kind: 'one'}
@@ -105,9 +110,6 @@ describe Hyperion::Core do
     end
 
     context 'save many' do
-      before :each do
-        core.datastore.returns << []
-      end
 
       context 'record formatting on save' do
         it_behaves_like 'record formatting', lambda { |record|
@@ -121,6 +123,96 @@ describe Hyperion::Core do
           Hyperion::Core.datastore.returns = [[record]]
           Hyperion::Core.save_many([{}]).first
         }
+      end
+    end
+
+    context 'find by kind' do
+      it 'creates a query and passes the kind as string' do
+        core.find_by_kind('one')
+        query = fake_ds.queries.first
+        query.kind.should == 'one'
+      end
+
+      it 'creates a query and passes the kind as symbol' do
+        core.find_by_kind(:one)
+        query = fake_ds.queries.first
+        query.kind.should == 'one'
+      end
+
+      it 'creates a query and passes the kind as symbol' do
+        core.find_by_kind(:one)
+        query = fake_ds.queries.first
+        query.kind.should == 'one'
+      end
+
+      it 'formats kind as snake case' do
+        core.find_by_kind(:TheKind)
+        query = fake_ds.queries.first
+        query.kind.should == 'the_kind'
+      end
+
+      context 'parses filters' do
+
+        def do_find(filter)
+          core.find_by_kind('TheKind', filters: [filter])
+          query = fake_ds.queries.first
+          query.filters.first
+        end
+
+        context 'field' do
+
+          {
+            'field' => :field,
+            'Field' => :field,
+            'FieldOne' => :field_one,
+            'SomeBigAttr' => :some_big_attr,
+            :SomeBigAttr => :some_big_attr,
+            'one-two-three' => :one_two_three,
+            'one two three' => :one_two_three
+          }.each_pair do |field, result|
+
+            it "parses #{field} into #{result}" do
+              do_find([field, '=', 0]).field.should == result
+            end
+
+          end
+        end
+
+        context 'operator' do
+
+          {
+            '='         => '=',
+            'eq'        => '=',
+            '<'         => '<',
+            'lt'        => '<',
+            '>'         => '>',
+            'gt'        => '>',
+            '<='        => '<=',
+            'lte'       => '<=',
+            '>='        => '>=',
+            'gte'       => '>=',
+            '!='        => '!=',
+            'not'       => '!=',
+            'contains'  => 'contains?',
+            'contains?' => 'contains?',
+            'in?'       => 'contains?',
+            'in'        => 'contains?',
+          }.each_pair do |filter, result|
+
+              it "parses the #{filter} to #{result}" do
+                do_find([:attr, filter, 0]).operator.should == result
+              end
+
+            end
+        end
+
+        context 'value' do
+
+          it 'passes the value to the filter' do
+            do_find([:attr, '=', 0]).value.should == 0
+          end
+
+        end
       end
     end
   end
