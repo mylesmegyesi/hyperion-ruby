@@ -1,4 +1,4 @@
-hyperion-ruby
+Hyperion
 =============
 
 Generic Persistence API for Ruby

@@ -12,8 +12,7 @@ module Hyperion
       end
 
       def save(record, attrs={})
-        attrs ||= {}
-        save_many([record.merge(attrs)]).first
+        save_many([record.merge(attrs || {})]).first
       end
 
       def save_many(records)

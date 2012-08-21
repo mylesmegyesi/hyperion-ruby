@@ -30,7 +30,6 @@ module Hyperion
 
       def generate_key
         @id_counter += 1
-        @id_counter
       end
 
     end
