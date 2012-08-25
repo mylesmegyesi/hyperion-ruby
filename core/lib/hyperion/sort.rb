@@ -7,5 +7,13 @@ module Hyperion
       @field = field
       @order = order
     end
+
+    def ascending?
+      order == :asc
+    end
+
+    def descending?
+      order == :desc
+    end
   end
 end
