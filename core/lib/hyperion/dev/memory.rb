@@ -51,7 +51,7 @@ module Hyperion
 
       private
 
-      attr_accessor :store
+      attr_reader :store
 
       def filter_kind(kind, records)
         records.select do |record|
