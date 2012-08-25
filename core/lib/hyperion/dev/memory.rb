@@ -18,6 +18,10 @@ module Hyperion
         end
       end
 
+      def find_by_key(key)
+        store[key]
+      end
+
       def find(query)
         records = store.values
         records = filter_kind(query.kind,      records)
@@ -26,6 +30,11 @@ module Hyperion
         records = apply_offset(query.offset,   records)
         records = apply_limit(query.limit,     records)
         records
+      end
+
+      def delete_by_key(key)
+        store.delete(key)
+        nil
       end
 
       def delete(query)

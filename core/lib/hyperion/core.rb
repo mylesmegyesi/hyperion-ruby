@@ -18,40 +18,45 @@ module Hyperion
       end
 
       def save_many(records)
-        format(datastore.save(format(records)))
+        format_records(datastore.save(format_records(records)))
       end
 
       def new?(record)
         !record.has_key?(:key)
       end
 
+      def find_by_key(key)
+        format_record(datastore.find_by_key(key))
+      end
+
       def find_by_kind(kind, args={})
-        kind = format_kind(kind)
-        filters = build_filters(args[:filters])
-        sorts = build_sorts(args[:sorts])
-        query = Query.new(kind, filters, sorts, args[:limit], args[:offset])
-        datastore.find(query)
+        format_records(datastore.find(build_query(kind, args)))
+      end
+
+      def delete_by_key(key)
+        datastore.delete_by_key(key)
       end
 
       def delete_by_kind(kind, args={})
-        kind = format_kind(kind)
-        filters = build_filters(args[:filters])
-        query = Query.new(kind, filters, nil, nil, nil)
-        datastore.delete(query)
+        datastore.delete(build_query(kind, args))
       end
 
       def count_by_kind(kind, args={})
-        kind = format_kind(kind)
-        filters = build_filters(args[:filters])
-        query = Query.new(kind, filters, nil, nil, nil)
-        datastore.count(query)
+        datastore.count(build_query(kind, args))
       end
 
       private
 
+      def build_query(kind, args)
+        kind = format_kind(kind)
+        filters = build_filters(args[:filters])
+        sorts = build_sorts(args[:sorts])
+        Query.new(kind, filters, sorts, args[:limit], args[:offset])
+      end
+
       def build_filters(filters)
         (filters || []).map do |(field, operator, value)|
-          operator = parse_operator(operator)
+          operator = format_operator(operator)
           field = format_field(field)
           Filter.new(field, operator, value)
         end
@@ -60,16 +65,16 @@ module Hyperion
       def build_sorts(sorts)
         (sorts || []).map do |(field, order)|
           field = format_field(field)
-          order = parse_order(order)
+          order = format_order(order)
           Sort.new(field, order)
         end
       end
 
-      def parse_order(order)
+      def format_order(order)
         order.to_sym
       end
 
-      def parse_operator(operator)
+      def format_operator(operator)
         case operator
         when '=', 'eq'
           '='
@@ -88,11 +93,16 @@ module Hyperion
         end
       end
 
-      def format(records)
+      def format_records(records)
         records.map do |record|
+          format_record(record)
+        end
+      end
+
+      def format_record(record)
+        if record
           record = record.reduce({}) do |new_record, (key, value)|
-            snake_case_attr = snake_case(key.to_s)
-            new_record[snake_case_attr.to_sym] = value
+            new_record[snake_case(key.to_s).to_sym] = value
             new_record
           end
           record[:kind] = format_kind(record[:kind])

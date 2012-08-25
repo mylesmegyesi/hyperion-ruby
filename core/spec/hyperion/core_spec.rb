@@ -1,129 +1,6 @@
 require 'hyperion/core'
-
-shared_examples_for 'kind formatting' do |actor|
-  {
-    'one'     => 'one',
-    :one      => 'one',
-    :TheKind  => 'the_kind',
-    'TheKind' => 'the_kind'
-  }.each_pair do |kind, result|
-
-    it "#{kind} to #{result}" do
-      actor.call(kind).should == result
-    end
-
-  end
-end
-
-shared_examples_for 'field formatting' do |actor|
-
-  {
-    'field' => :field,
-    'Field' => :field,
-    'FieldOne' => :field_one,
-    'SomeBigAttr' => :some_big_attr,
-    :SomeBigAttr => :some_big_attr,
-    'one-two-three' => :one_two_three,
-    'one two three' => :one_two_three
-  }.each_pair do |field, result|
-
-    it "#{field.inspect} to #{result.inspect}" do
-      actor.call(field).should == result
-    end
-
-  end
-end
-
-shared_examples_for 'record formatting' do |actor|
-
-  context 'formats kind' do
-    include_examples 'kind formatting', lambda { |kind|
-      record = actor.call({kind: kind})
-      record[:kind]
-    }
-  end
-
-  context 'formats fields' do
-    include_examples 'field formatting', lambda { |field|
-      record = actor.call({field => 'value'})
-      record.delete(:kind)
-      record.keys.first
-    }
-  end
-end
-
-shared_examples_for 'filtering' do |actor|
-
-  context 'field' do
-    include_examples 'field formatting', lambda { |field|
-      actor.call([field, '=', 0]).field
-    }
-  end
-
-  context 'operator' do
-
-    {
-      '='         => '=',
-      'eq'        => '=',
-      '<'         => '<',
-      'lt'        => '<',
-      '>'         => '>',
-      'gt'        => '>',
-      '<='        => '<=',
-      'lte'       => '<=',
-      '>='        => '>=',
-      'gte'       => '>=',
-      '!='        => '!=',
-      'not'       => '!=',
-      'contains'  => 'contains?',
-      'contains?' => 'contains?',
-      'in?'       => 'contains?',
-      'in'        => 'contains?',
-    }.each_pair do |filter, result|
-
-        it "#{filter} to #{result}" do
-          actor.call([:attr, filter, 0]).operator.should == result
-        end
-
-      end
-  end
-
-  it 'passes the value to the filter' do
-    actor.call([:attr, '=', 0]).value.should == 0
-  end
-end
-
-class FakeDatastore
-
-  attr_accessor :saved_records, :queries, :returns
-
-  def initialize
-    @saved_records = []
-    @returns = []
-    @queries = []
-  end
-
-  def save(records)
-    @saved_records += records
-    returns.shift || []
-  end
-
-  def find(query)
-    @queries << query
-    returns.shift || []
-  end
-
-  def delete(query)
-    @queries << query
-    returns.shift || nil
-  end
-
-  def count(query)
-    @queries << query
-    returns.shift || 0
-  end
-
-end
+require 'hyperion/shared_examples'
+require 'hyperion/fake_ds'
 
 describe Hyperion::Core do
 
@@ -260,38 +137,65 @@ describe Hyperion::Core do
         core.find_by_kind('kind', offset: 10)
         fake_ds.queries.first.offset.should == 10
       end
-    end
-  end
 
-  context 'delete by kind' do
-    context 'parses kind' do
-      include_examples 'kind formatting', lambda { |kind|
-        Hyperion::Core.delete_by_kind(kind)
-        Hyperion::Core.datastore.queries.last.kind
-      }
+      context 'formats records on return from ds' do
+        include_examples 'record formatting', lambda {|record|
+          Hyperion::Core.datastore.returns = [[record]]
+          Hyperion::Core.find_by_kind('kind').first
+        }
+      end
     end
 
-    context 'parses filters' do
-      include_examples 'filtering', lambda { |filter|
-        Hyperion::Core.delete_by_kind('kind', filters: [filter])
-        Hyperion::Core.datastore.queries.last.filters.first
-      }
-    end
-  end
+    context 'delete by kind' do
+      context 'parses kind' do
+        include_examples 'kind formatting', lambda { |kind|
+          Hyperion::Core.delete_by_kind(kind)
+          Hyperion::Core.datastore.queries.last.kind
+        }
+      end
 
-  context 'count by kind' do
-    context 'parses kind' do
-      include_examples 'kind formatting', lambda { |kind|
-        Hyperion::Core.count_by_kind(kind)
-        Hyperion::Core.datastore.queries.last.kind
-      }
+      context 'parses filters' do
+        include_examples 'filtering', lambda { |filter|
+          Hyperion::Core.delete_by_kind('kind', filters: [filter])
+          Hyperion::Core.datastore.queries.last.filters.first
+        }
+      end
     end
 
-    context 'parses filters' do
-      include_examples 'filtering', lambda { |filter|
-        Hyperion::Core.count_by_kind('kind', filters: [filter])
-        Hyperion::Core.datastore.queries.last.filters.first
-      }
+    it 'deletes by key' do
+      core.delete_by_key('delete_key')
+      fake_ds.key_queries.first.should == 'delete_key'
+    end
+
+    context 'count by kind' do
+      context 'parses kind' do
+        include_examples 'kind formatting', lambda { |kind|
+          Hyperion::Core.count_by_kind(kind)
+          Hyperion::Core.datastore.queries.last.kind
+        }
+      end
+
+      context 'parses filters' do
+        include_examples 'filtering', lambda { |filter|
+          Hyperion::Core.count_by_kind('kind', filters: [filter])
+          Hyperion::Core.datastore.queries.last.filters.first
+        }
+      end
+    end
+
+    context 'find by key' do
+      it 'finds by key' do
+        core.find_by_key('key')
+        fake_ds.key_queries.first.should == 'key'
+      end
+
+      context 'formats records on return from ds' do
+        include_examples 'record formatting', lambda {|record|
+          Hyperion::Core.datastore.returns = [record]
+          Hyperion::Core.find_by_key('key')
+        }
+      end
+
     end
   end
 end
