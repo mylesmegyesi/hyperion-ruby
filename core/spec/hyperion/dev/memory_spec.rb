@@ -10,7 +10,7 @@ describe Hyperion::Dev::Memory do
     Hyperion::Core
   end
 
-  context 'saving' do
+  context 'save' do
 
     it 'saves a hash and returns it' do
       record = core.save({kind: 'testing', name: 'ann'})
@@ -58,20 +58,21 @@ describe Hyperion::Dev::Memory do
   context 'find by kind' do
     before :each do
       core.save_many([
-        {kind: 'testing', inti: 1, data: 'one'},
-        {kind: 'testing', inti: 12, data: 'twelve'},
+        {kind: 'testing', inti: 1,  data: 'one'    },
+        {kind: 'testing', inti: 12, data: 'twelve' },
         {kind: 'testing', inti: 23, data: 'twenty3'},
         {kind: 'testing', inti: 34, data: 'thirty4'},
-        {kind: 'testing', inti: 45, data: 'forty5'},
-        {kind: 'testing', inti: 1, data: 'the one'},
-        {kind: 'testing', inti: 44, data: 'forty4'}
+        {kind: 'testing', inti: 45, data: 'forty5' },
+        {kind: 'testing', inti: 1,  data: 'the one'},
+        {kind: 'testing', inti: 44, data: 'forty4' }
       ])
     end
 
     it 'filters by the kind' do
+      core.save({kind: 'other_testing', inti: 5})
       found_records = core.find_by_kind('testing')
-      found_records.all? do |record|
-        record[:kind] == 'testing'
+      found_records.each do |record|
+        record[:kind].should == 'testing'
       end
     end
 
@@ -96,12 +97,12 @@ describe Hyperion::Dev::Memory do
         [[[:data, '!=', 'one'], [:data, '!=', 'twelve'], [:data, '!=', 'twenty3']], ['the one', 'thirty4', 'forty4', 'forty5'], :data],
       ].each do |filters, result, field|
 
-        it filters.map {|f| f.to_s}.join(', ') do
-          found_records = core.find_by_kind('testing', filters: filters)
-          ints = Set.new(found_records.map {|record| record[field]})
-          ints.should == Set.new(result)
+          it filters.map {|f| f.to_s}.join(', ') do
+            found_records = core.find_by_kind('testing', filters: filters)
+            ints = Set.new(found_records.map {|record| record[field]})
+            ints.should == Set.new(result)
+          end
         end
-      end
 
     end
 
@@ -122,35 +123,101 @@ describe Hyperion::Dev::Memory do
           ints.should == result
         end
       end
+    end
 
-      context 'limit and offset' do
-        specify 'offset n returns results starting at the nth record' do
-          found_records = core.find_by_kind('testing', sorts: [[:inti, :asc]], offset: 2)
-          ints = found_records.map {|record| record[:inti]}
-          ints.should == [12, 23, 34, 44, 45]
-        end
-
-        specify 'limit n takes only the first n records' do
-          found_records = core.find_by_kind('testing', sorts: [[:inti, :asc]], limit: 2)
-          found_records.map {|record| record[:inti]}.should == [1, 1]
-
-          found_records = core.find_by_kind('testing', sorts: [[:inti, :asc]], limit: 1_000_000)
-          found_records.map {|record| record[:inti]}.should == [1, 1, 12, 23, 34, 44, 45]
-        end
-
-       [
-         [{limit: 2, offset: 2}, [[:inti, :asc]],  [12, 23]],
-         [{limit: 2, offset: 4}, [[:inti, :asc]],  [34, 44]],
-         [{limit: 2},            [[:inti, :desc]], [45, 44]],
-         [{limit: 2, offset: 2}, [[:inti, :desc]], [34, 23]],
-         [{limit: 2, offset: 4}, [[:inti, :desc]], [12,  1]],
-       ].each do |constraints, sorts, result|
-         example constraints.inspect do
-           found_records = core.find_by_kind 'testing', constraints.merge(sorts: sorts)
-           found_records.map { |record| record[:inti] }.should == result
-         end
-       end
+    context 'limit and offset' do
+      specify 'offset n returns results starting at the nth record' do
+        found_records = core.find_by_kind('testing', sorts: [[:inti, :asc]], offset: 2)
+        ints = found_records.map {|record| record[:inti]}
+        ints.should == [12, 23, 34, 44, 45]
       end
+
+      specify 'limit n takes only the first n records' do
+        found_records = core.find_by_kind('testing', sorts: [[:inti, :asc]], limit: 2)
+        found_records.map {|record| record[:inti]}.should == [1, 1]
+
+        found_records = core.find_by_kind('testing', sorts: [[:inti, :asc]], limit: 1_000_000)
+        found_records.map {|record| record[:inti]}.should == [1, 1, 12, 23, 34, 44, 45]
+      end
+
+      [
+        [{limit: 2, offset: 2}, [[:inti, :asc]],  [12, 23]],
+        [{limit: 2, offset: 4}, [[:inti, :asc]],  [34, 44]],
+        [{limit: 2},            [[:inti, :desc]], [45, 44]],
+        [{limit: 2, offset: 2}, [[:inti, :desc]], [34, 23]],
+        [{limit: 2, offset: 4}, [[:inti, :desc]], [12,  1]],
+      ].each do |constraints, sorts, result|
+          example constraints.inspect do
+            found_records = core.find_by_kind 'testing', constraints.merge(sorts: sorts)
+            found_records.map { |record| record[:inti] }.should == result
+          end
+        end
+    end
+  end
+
+  context 'delete' do
+
+    before :each do
+      core.save_many([
+        {kind: 'testing', inti: 1,  data: 'one'    },
+        {kind: 'testing', inti: 12, data: 'twelve' }
+      ])
+    end
+
+    context 'filters' do
+
+      [
+        [[], []],
+        [[[:inti, '=', 1]], [12]],
+        [[[:data, '=', 'one']], [12]],
+        [[[:inti, '!=', 1]], [1]],
+        [[[:inti, '<=', 1]], [12]],
+        [[[:inti, '<=', 2]], [12]],
+        [[[:inti, '>=', 2]], [1]],
+        [[[:inti, '>', 1]], [1]],
+        [[[:inti, 'in', [1]]], [12]],
+        [[[:inti, 'in', [1, 12]]], []],
+        [[[:inti, '=', 2]], [1, 12]]
+      ].each do |filters, result|
+        it filters.inspect do
+          core.delete_by_kind('testing', filters: filters)
+          intis = core.find_by_kind('testing').map {|r| r[:inti]}
+          intis.should == result
+        end
+      end
+
+    end
+  end
+
+  context 'count' do
+
+    before :each do
+      core.save_many([
+        {kind: 'testing', inti: 1,  data: 'one'    },
+        {kind: 'testing', inti: 12, data: 'twelve' }
+      ])
+    end
+
+    context 'filters' do
+
+      [
+        [[], 2],
+        [[[:inti, '=', 1]], 1],
+        [[[:data, '=', 'one']], 1],
+        [[[:inti, '!=', 1]], 1],
+        [[[:inti, '<=', 1]], 1],
+        [[[:inti, '<=', 2]], 1],
+        [[[:inti, '>=', 2]], 1],
+        [[[:inti, '>', 1]], 1],
+        [[[:inti, 'in', [1]]], 1],
+        [[[:inti, 'in', [1, 12]]], 2],
+        [[[:inti, '=', 2]], 0]
+      ].each do |filters, result|
+        it filters.inspect do
+          core.count_by_kind('testing', filters: filters).should == result
+        end
+      end
+
     end
   end
 end

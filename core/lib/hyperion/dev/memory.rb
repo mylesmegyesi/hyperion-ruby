@@ -24,8 +24,20 @@ module Hyperion
         records = apply_filters(query.filters, records)
         records = apply_sorts(query.sorts,     records)
         records = apply_offset(query.offset,   records)
-        records = apply_limit(query.limit,   records)
+        records = apply_limit(query.limit,     records)
         records
+      end
+
+      def delete(query)
+        records = find(query)
+        store.delete_if do |key, record|
+          records.include?(record)
+        end
+        nil
+      end
+
+      def count(query)
+        find(query).length
       end
 
       private

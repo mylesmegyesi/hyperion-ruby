@@ -4,8 +4,8 @@ module Hyperion
 
     def initialize(kind, filters, sorts, limit, offset)
       @kind = kind
-      @filters = filters
-      @sorts = sorts
+      @filters = filters || []
+      @sorts = sorts || []
       @limit = limit
       @offset = offset
     end

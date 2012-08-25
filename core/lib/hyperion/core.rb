@@ -26,11 +26,25 @@ module Hyperion
       end
 
       def find_by_kind(kind, args={})
-        kind = snake_case(kind.to_s)
+        kind = format_kind(kind)
         filters = build_filters(args[:filters])
         sorts = build_sorts(args[:sorts])
         query = Query.new(kind, filters, sorts, args[:limit], args[:offset])
         datastore.find(query)
+      end
+
+      def delete_by_kind(kind, args={})
+        kind = format_kind(kind)
+        filters = build_filters(args[:filters])
+        query = Query.new(kind, filters, nil, nil, nil)
+        datastore.delete(query)
+      end
+
+      def count_by_kind(kind, args={})
+        kind = format_kind(kind)
+        filters = build_filters(args[:filters])
+        query = Query.new(kind, filters, nil, nil, nil)
+        datastore.count(query)
       end
 
       private
@@ -81,9 +95,13 @@ module Hyperion
             new_record[snake_case_attr.to_sym] = value
             new_record
           end
-          record[:kind] = record[:kind].to_s
+          record[:kind] = format_kind(record[:kind])
           record
         end
+      end
+
+      def format_kind(kind)
+        snake_case(kind.to_s)
       end
 
       def format_field(field)
