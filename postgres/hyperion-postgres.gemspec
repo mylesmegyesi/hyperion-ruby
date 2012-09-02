@@ -16,5 +16,6 @@ Gem::Specification.new do |gem|
   gem.require_paths         = ['lib']
 
   gem.add_dependency('hyperion-core', '0.0.1')
+  gem.add_dependency('do_postgres', '0.10.8')
   gem.add_development_dependency('rspec', '2.11.0')
 end

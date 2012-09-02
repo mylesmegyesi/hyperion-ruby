@@ -17,7 +17,7 @@ shared_examples_for 'Datastore' do
       record[:key].should_not be_nil
     end
 
-    it 'it saves an existing record' do
+    it 'saves an existing record' do
       record1 = core.save({kind: 'other_testing', name: 'ann'})
       record2 = core.save(record1.merge(name: 'james'))
       record1[:key].should == record2[:key]
