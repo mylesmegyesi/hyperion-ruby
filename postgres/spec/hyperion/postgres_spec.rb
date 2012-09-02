@@ -5,7 +5,7 @@ require 'hyperion/dev/ds_spec'
 describe Hyperion::Postgres do
 
   around :each do |example|
-    connection = DataObjects::Connection.new('postgres://localhost/hyperion-ruby')
+    connection = DataObjects::Connection.new('postgres://localhost/hyperion_ruby')
 
     create_tables_command = connection.create_command <<-QUERY
     CREATE TABLE testing (
