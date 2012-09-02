@@ -3,7 +3,6 @@ rvm:
   - 1.9.3
 
 before_script:
-  - mysql -e 'create database hyperion-ruby;'
   - psql -c 'create database hyperion-ruby;' -U postgres
 
 script: rake spec
