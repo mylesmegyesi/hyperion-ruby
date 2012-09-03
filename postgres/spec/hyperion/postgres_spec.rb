@@ -1,5 +1,6 @@
 require 'do_postgres'
 require 'hyperion/postgres'
+require 'hyperion/sql/connection'
 require 'hyperion/dev/ds_spec'
 
 describe Hyperion::Postgres do
@@ -23,8 +24,8 @@ describe Hyperion::Postgres do
     QUERY
     create_tables_command.execute_non_query
 
-    Hyperion::Postgres.connection = connection
-    Hyperion::Core.datastore = Hyperion::Postgres.new
+    Hyperion::Sql::Connection.connection = connection
+    Hyperion::Core.datastore = Hyperion::Postgres.create_datastore
 
     example.run
 
