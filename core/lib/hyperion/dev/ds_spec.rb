@@ -7,26 +7,26 @@ shared_examples_for 'Datastore' do
   context 'save' do
 
     it 'saves a hash and returns it' do
-      record = core.save({kind: 'testing', name: 'ann'})
+      record = core.save({:kind => 'testing', :name => 'ann'})
       record[:kind].should == 'testing'
       record[:name].should == 'ann'
     end
 
     it 'assigns a key to new records' do
-      record = core.save({kind: 'testing', name: 'ann'})
+      record = core.save({:kind => 'testing', :name => 'ann'})
       record[:key].should_not be_nil
     end
 
     it 'saves an existing record' do
-      record1 = core.save({kind: 'other_testing', name: 'ann'})
-      record2 = core.save(record1.merge(name: 'james'))
+      record1 = core.save({:kind => 'other_testing', :name => 'ann'})
+      record2 = core.save(record1.merge(:name => 'james'))
       record1[:key].should == record2[:key]
       core.find_by_kind('other_testing').length.should == 1
     end
 
     def ten_testing_records(kind = 'testing')
       (1..10).to_a.map do |i|
-        {kind: kind, name: i.to_s}
+        {:kind => kind, :name => i.to_s}
       end
     end
 
@@ -43,15 +43,15 @@ shared_examples_for 'Datastore' do
       records.length.should == 10
       found_records = core.find_by_kind('testing')
       found_records.length.should == 10
-      names = found_records.map { |record| record[:name] }
-      names.should == (1..10).to_a.map { |i| i.to_s }
+      names = Set.new(found_records.map { |record| record[:name] })
+      names.should == Set.new((1..10).to_a.map { |i| i.to_s })
     end
 
   end
 
   context 'find by key' do
     it 'finds by key' do
-      record = core.save({kind: 'testing', inti: 5})
+      record = core.save({:kind => 'testing', :inti => 5})
       core.find_by_key(record[:key]).should == record
     end
   end
@@ -59,18 +59,18 @@ shared_examples_for 'Datastore' do
   context 'find by kind' do
     before :each do
       core.save_many([
-        {kind: 'testing', inti: 1,  data: 'one'    },
-        {kind: 'testing', inti: 12, data: 'twelve' },
-        {kind: 'testing', inti: 23, data: 'twenty3'},
-        {kind: 'testing', inti: 34, data: 'thirty4'},
-        {kind: 'testing', inti: 45, data: 'forty5' },
-        {kind: 'testing', inti: 1,  data: 'the one'},
-        {kind: 'testing', inti: 44, data: 'forty4' }
+        {:kind => 'testing', :inti => 1,  :data => 'one'    },
+        {:kind => 'testing', :inti => 12, :data => 'twelve' },
+        {:kind => 'testing', :inti => 23, :data => 'twenty3'},
+        {:kind => 'testing', :inti => 34, :data => 'thirty4'},
+        {:kind => 'testing', :inti => 45, :data => 'forty5' },
+        {:kind => 'testing', :inti => 1,  :data => 'the one'},
+        {:kind => 'testing', :inti => 44, :data => 'forty4' }
       ])
     end
 
     it 'filters by the kind' do
-      core.save({kind: 'other_testing', inti: 5})
+      core.save({:kind => 'other_testing', :inti => 5})
       found_records = core.find_by_kind('testing')
       found_records.each do |record|
         record[:kind].should == 'testing'
@@ -99,7 +99,7 @@ shared_examples_for 'Datastore' do
       ].each do |filters, result, field|
 
           it filters.map {|f| f.to_s}.join(', ') do
-            found_records = core.find_by_kind('testing', filters: filters)
+            found_records = core.find_by_kind('testing', :filters => filters)
             ints = Set.new(found_records.map {|record| record[field]})
             ints.should == Set.new(result)
           end
@@ -119,7 +119,7 @@ shared_examples_for 'Datastore' do
       ].each do |sorts, result, field|
 
         it sorts.map {|f| f.to_s}.join(', ') do
-          found_records = core.find_by_kind('testing', sorts: sorts)
+          found_records = core.find_by_kind('testing', :sorts => sorts)
           ints = found_records.map {|record| record[field]}
           ints.should == result
         end
@@ -128,28 +128,28 @@ shared_examples_for 'Datastore' do
 
     context 'limit and offset' do
       specify 'offset n returns results starting at the nth record' do
-        found_records = core.find_by_kind('testing', sorts: [[:inti, :asc]], offset: 2)
+        found_records = core.find_by_kind('testing', :sorts => [[:inti, :asc]], :offset => 2)
         ints = found_records.map {|record| record[:inti]}
         ints.should == [12, 23, 34, 44, 45]
       end
 
       specify 'limit n takes only the first n records' do
-        found_records = core.find_by_kind('testing', sorts: [[:inti, :asc]], limit: 2)
+        found_records = core.find_by_kind('testing', :sorts => [[:inti, :asc]], :limit => 2)
         found_records.map {|record| record[:inti]}.should == [1, 1]
 
-        found_records = core.find_by_kind('testing', sorts: [[:inti, :asc]], limit: 1_000_000)
+        found_records = core.find_by_kind('testing', :sorts => [[:inti, :asc]], :limit => 1_000_000)
         found_records.map {|record| record[:inti]}.should == [1, 1, 12, 23, 34, 44, 45]
       end
 
       [
-        [{limit: 2, offset: 2}, [[:inti, :asc]],  [12, 23]],
-        [{limit: 2, offset: 4}, [[:inti, :asc]],  [34, 44]],
-        [{limit: 2},            [[:inti, :desc]], [45, 44]],
-        [{limit: 2, offset: 2}, [[:inti, :desc]], [34, 23]],
-        [{limit: 2, offset: 4}, [[:inti, :desc]], [12,  1]],
+        [{:limit => 2, :offset => 2}, [[:inti, :asc]],  [12, 23]],
+        [{:limit => 2, :offset => 4}, [[:inti, :asc]],  [34, 44]],
+        [{:limit => 2}              , [[:inti, :desc]], [45, 44]],
+        [{:limit => 2, :offset => 2}, [[:inti, :desc]], [34, 23]],
+        [{:limit => 2, :offset => 4}, [[:inti, :desc]], [12,  1]],
       ].each do |constraints, sorts, result|
           example constraints.inspect do
-            found_records = core.find_by_kind 'testing', constraints.merge(sorts: sorts)
+            found_records = core.find_by_kind 'testing', constraints.merge(:sorts => sorts)
             found_records.map { |record| record[:inti] }.should == result
           end
         end
@@ -160,8 +160,8 @@ shared_examples_for 'Datastore' do
 
     before :each do
       core.save_many([
-        {kind: 'testing', inti: 1,  data: 'one'    },
-        {kind: 'testing', inti: 12, data: 'twelve' }
+        {:kind => 'testing', :inti => 1,  :data => 'one'    },
+        {:kind => 'testing', :inti => 12, :data => 'twelve' }
       ])
     end
 
@@ -188,7 +188,7 @@ shared_examples_for 'Datastore' do
         [[[:inti, '=', 2]], [1, 12]]
       ].each do |filters, result|
         it filters.inspect do
-          core.delete_by_kind('testing', filters: filters)
+          core.delete_by_kind('testing', :filters => filters)
           intis = core.find_by_kind('testing').map {|r| r[:inti]}
           intis.should == result
         end
@@ -201,8 +201,8 @@ shared_examples_for 'Datastore' do
 
     before :each do
       core.save_many([
-        {kind: 'testing', inti: 1,  data: 'one'    },
-        {kind: 'testing', inti: 12, data: 'twelve' }
+        {:kind => 'testing', :inti => 1,  :data => 'one'    },
+        {:kind => 'testing', :inti => 12, :data => 'twelve' }
       ])
     end
 
@@ -222,7 +222,7 @@ shared_examples_for 'Datastore' do
         [[[:inti, '=', 2]], 0]
       ].each do |filters, result|
         it filters.inspect do
-          core.count_by_kind('testing', filters: filters).should == result
+          core.count_by_kind('testing', :filters => filters).should == result
         end
       end
 

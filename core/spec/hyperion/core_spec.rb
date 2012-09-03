@@ -16,7 +16,7 @@ describe Hyperion::Core do
 
   context 'new?' do
     it 'false if a record exists' do
-      core.new?({key: 1}).should be_false
+      core.new?({:key => 1}).should be_false
     end
 
     it 'true if a record does not exist' do
@@ -35,19 +35,19 @@ describe Hyperion::Core do
     context 'save' do
 
       it 'saves a record' do
-        record = {kind: 'one'}
+        record = {:kind => 'one'}
         core.save(record)
         core.datastore.saved_records.first.should == record
       end
 
       it 'merges the given attrs' do
-        core.save({kind: 'one'}, attr: 'value')
-        core.datastore.saved_records.first.should == {kind: 'one', attr: 'value'}
+        core.save({:kind => 'one'}, :attr =>'value')
+        core.datastore.saved_records.first.should == {:kind => 'one', :attr => 'value'}
       end
 
       it 'handles nil input to attrs' do
-        core.save({kind: 'one'}, nil)
-        core.datastore.saved_records.first.should == {kind: 'one'}
+        core.save({:kind => 'one'}, nil)
+        core.datastore.saved_records.first.should == {:kind => 'one'}
       end
 
       context 'record formatting on save' do
@@ -92,7 +92,7 @@ describe Hyperion::Core do
 
       context 'parses filters' do
         include_examples 'filtering', lambda { |filter|
-          Hyperion::Core.find_by_kind('kind', filters: [filter])
+          Hyperion::Core.find_by_kind('kind', :filters => [filter])
           Hyperion::Core.datastore.queries.last.filters.first
         }
       end
@@ -100,14 +100,14 @@ describe Hyperion::Core do
       context 'parses sorts' do
 
         def do_find(sort)
-          core.find_by_kind('kind', sorts: [sort])
+          core.find_by_kind('kind', :sorts => [sort])
           query = fake_ds.queries.last
           query.sorts.first
         end
 
         context 'field' do
           include_examples 'field formatting', lambda { |field|
-            Hyperion::Core.find_by_kind('kind', sorts: [[field, 'desc']])
+            Hyperion::Core.find_by_kind('kind', :sorts => [[field, 'desc']])
             Hyperion::Core.datastore.queries.first.sorts.first.field
           }
         end
@@ -129,12 +129,12 @@ describe Hyperion::Core do
       end
 
       it 'passes limit to the query' do
-        core.find_by_kind('kind', limit: 1)
+        core.find_by_kind('kind', :limit => 1)
         fake_ds.queries.first.limit.should == 1
       end
 
       it 'passes offset to the query' do
-        core.find_by_kind('kind', offset: 10)
+        core.find_by_kind('kind', :offset => 10)
         fake_ds.queries.first.offset.should == 10
       end
 
@@ -156,7 +156,7 @@ describe Hyperion::Core do
 
       context 'parses filters' do
         include_examples 'filtering', lambda { |filter|
-          Hyperion::Core.delete_by_kind('kind', filters: [filter])
+          Hyperion::Core.delete_by_kind('kind', :filters => [filter])
           Hyperion::Core.datastore.queries.last.filters.first
         }
       end
@@ -177,7 +177,7 @@ describe Hyperion::Core do
 
       context 'parses filters' do
         include_examples 'filtering', lambda { |filter|
-          Hyperion::Core.count_by_kind('kind', filters: [filter])
+          Hyperion::Core.count_by_kind('kind', :filters => [filter])
           Hyperion::Core.datastore.queries.last.filters.first
         }
       end

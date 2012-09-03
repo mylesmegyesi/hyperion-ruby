@@ -9,7 +9,7 @@ Gem::Specification.new do |gem|
   gem.description           = %q{A Generic Persistence API for Ruby}
   gem.summary               = %q{A Generic Persistence API for Ruby}
   gem.homepage              = 'https://github.com/mylesmegyesi/hyperion-ruby'
-  gem.required_ruby_version = '>= 1.9.1'
+  gem.required_ruby_version = '>= 1.8.7'
 
   gem.files                 = Dir['lib/**/*.rb']
   gem.test_files            = Dir['spec/**/*.rb']

@@ -36,7 +36,7 @@ shared_examples_for 'record formatting' do |actor|
 
   context 'formats kind' do
     include_examples 'kind formatting', lambda { |kind|
-      record = actor.call({kind: kind})
+      record = actor.call({:kind => kind})
       record[:kind]
     }
   end

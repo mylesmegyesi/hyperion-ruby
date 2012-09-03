@@ -5,13 +5,20 @@ def package(name)
   end
 
   desc "Gather dependencies for #{name}"
-  task :deps  => :clean do
+  task :deps => [:clean, :bundler] do
     command(name, 'bundle install')
   end
 
   desc "Run #{name} specs"
   task :spec => :deps do
     command(name, 'bundle exec rspec')
+  end
+
+  desc "Ensure Bundler is installed for #{name}"
+  task :bundler do
+    unless command(name, 'which bundler')
+      command(name, 'gem install bundler')
+    end
   end
 
   desc "Install #{name}"
@@ -25,7 +32,9 @@ def dir_path(dir)
 end
 
 def command(dir, command)
-  sh "cd #{dir_path(dir)} && #{command}"
+  sh "cd #{dir_path(dir)} && #{command}" do |ok, res|
+    return ok
+  end
 end
 
 namespace :core do
@@ -33,7 +42,6 @@ namespace :core do
 end
 
 namespace :postgres do
-  task :deps => 'core:install'
   package('postgres')
 end
 
