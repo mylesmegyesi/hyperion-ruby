@@ -16,7 +16,7 @@ def package(name)
 
   desc "Ensure Bundler is installed for #{name}"
   task :bundler do
-    unless command(name, 'which bundler')
+    unless return_command(name, 'which bundler')
       command(name, 'gem install bundler')
     end
   end
@@ -31,10 +31,14 @@ def dir_path(dir)
   File.expand_path(File.join('..', dir), __FILE__)
 end
 
-def command(dir, command)
+def return_command(dir, command)
   sh "cd #{dir_path(dir)} && #{command}" do |ok, res|
     return ok
   end
+end
+
+def command(dir, command)
+  sh "cd #{dir_path(dir)} && #{command}"
 end
 
 namespace :core do
