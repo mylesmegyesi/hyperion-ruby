@@ -51,8 +51,9 @@ shared_examples_for 'Datastore' do
   end
 
   def remove_nils(record)
-    record.select do |field, value|
-      !value.nil?
+    record.reduce({}) do |non_nil_record, (field, value)|
+      non_nil_record[field] = value unless value.nil?
+      non_nil_record
     end
   end
 
