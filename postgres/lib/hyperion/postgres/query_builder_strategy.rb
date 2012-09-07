@@ -19,6 +19,10 @@ module Hyperion
         "#{sql_query_str} RETURNING *"
       end
 
+      def empty_insert_query(table)
+        "INSERT INTO #{table} DEFAULT VALUES"
+      end
+
       private
 
       def apply_limit(sql_query, limit)

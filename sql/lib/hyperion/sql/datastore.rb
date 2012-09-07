@@ -17,10 +17,13 @@ module Hyperion
 
       def save(records)
         records.map do |record|
-          sql_query = Core.new?(record) ? query_builder.build_insert(record) : query_builder.build_update(record)
-          result = query_executor.execute_write(sql_query)
-          returned_record = db_strategy.process_result(record, result)
-          record_from_db(returned_record, record[:kind])
+          if Core.new?(record)
+            execute_save_query(query_builder.build_insert(record), record)
+          elsif non_empty_record?(record)
+            execute_save_query(query_builder.build_update(record), record)
+          else
+            record
+          end
         end
       end
 
@@ -53,6 +56,19 @@ module Hyperion
       private
 
       attr_reader :query_builder, :query_executor, :db_strategy
+
+      def non_empty_record?(record)
+        record = record.dup
+        record.delete(:kind)
+        record.delete(:key)
+        !record.empty?
+      end
+
+      def execute_save_query(sql_query, record)
+        result = query_executor.execute_write(sql_query)
+        returned_record = db_strategy.process_result(record, result)
+        record_from_db(returned_record, record[:kind])
+      end
 
       def record_from_db(record, table)
         record[:key] = Key.compose_key(table, record.delete('id')) if Core.new?(record)

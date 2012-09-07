@@ -12,6 +12,11 @@ shared_examples_for 'Datastore' do
       record[:name].should == 'ann'
     end
 
+    it 'saves an empty record' do
+      record = core.save({:kind => 'testing'})
+      record[:kind].should == 'testing'
+    end
+
     it 'assigns a key to new records' do
       record = core.save({:kind => 'testing', :name => 'ann'})
       record[:key].should_not be_nil
@@ -20,6 +25,15 @@ shared_examples_for 'Datastore' do
     it 'saves an existing record' do
       record1 = core.save({:kind => 'other_testing', :name => 'ann'})
       record2 = core.save(record1.merge(:name => 'james'))
+      record1[:key].should == record2[:key]
+      core.find_by_kind('other_testing').length.should == 1
+    end
+
+    it 'saves an existing record to be empty' do
+      record1 = core.save({:kind => 'other_testing', :name => 'ann'})
+      record2 = record1.dup
+      record2.delete(:name)
+      record2 = core.save(record2)
       record1[:key].should == record2[:key]
       core.find_by_kind('other_testing').length.should == 1
     end

@@ -19,6 +19,10 @@ module Hyperion
       def normalize_update(sql_query_str)
         sql_query_str
       end
+
+      def empty_insert_query(table)
+        "INSERT INTO #{table} () VALUES ()"
+      end
     end
 
   end

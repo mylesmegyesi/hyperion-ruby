@@ -13,10 +13,14 @@ module Hyperion
       def build_insert(record)
         record = record.dup
         table = format_table(record.delete(:kind))
-        columns = format_array(record.keys.map {|c| format_column(c) })
-        values = format_array(record.values.map {|v| '?'})
-        query = qb_strategy.normalize_insert("INSERT INTO #{table} #{columns} VALUES #{values}")
-        SqlQuery.new(query, record.values)
+        unless record.empty?
+          columns = format_array(record.keys.map {|c| format_column(c) })
+          values = format_array(record.values.map {|v| '?'})
+          query = "INSERT INTO #{table} #{columns} VALUES #{values}"
+        else
+          query = qb_strategy.empty_insert_query(table)
+        end
+        SqlQuery.new(qb_strategy.normalize_insert(query), record.values)
       end
 
       def build_update(record)
