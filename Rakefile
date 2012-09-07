@@ -5,20 +5,13 @@ def package(name)
   end
 
   desc "Gather dependencies for #{name}"
-  task :deps => [:clean, :bundler] do
+  task :deps => :clean do
     command(name, 'bundle install')
   end
 
   desc "Run #{name} specs"
   task :spec => :deps do
     command(name, 'bundle exec rspec')
-  end
-
-  desc "Ensure Bundler is installed for #{name}"
-  task :bundler do
-    unless return_command(name, 'which bundler')
-      command(name, 'gem install bundler')
-    end
   end
 
   desc "Install #{name}"
@@ -49,7 +42,11 @@ namespace :postgres do
   package('postgres')
 end
 
-PROJECTS = [:core, :postgres]
+namespace :mysql do
+  package('mysql')
+end
+
+PROJECTS = [:core, :postgres, :mysql]
 
 def create_task_for_all(task_name)
   task task_name => PROJECTS.map {|project| "#{project}:#{task_name}"}
@@ -58,4 +55,7 @@ end
 desc 'Run the specs for Hyperion'
 create_task_for_all(:spec)
 
-task :default => :spec
+desc 'Install Hyperion'
+create_task_for_all(:install)
+
+task :default => [:spec, :install]

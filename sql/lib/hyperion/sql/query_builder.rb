@@ -15,7 +15,7 @@ module Hyperion
         table = format_table(record.delete(:kind))
         columns = format_array(record.keys.map {|c| format_column(c) })
         values = format_array(record.values.map {|v| '?'})
-        query = "INSERT INTO #{table} #{columns} VALUES #{values} RETURNING *"
+        query = qb_strategy.normalize_insert("INSERT INTO #{table} #{columns} VALUES #{values}")
         SqlQuery.new(query, record.values)
       end
 
@@ -24,7 +24,7 @@ module Hyperion
         table, id = Key.decompose_key(record.delete(:key))
         table = format_table(record.delete(:kind))
         column_values = record.keys.map {|field| "#{format_column(field)} = ?"}
-        query = "UPDATE #{table} SET #{column_values.join(', ')} WHERE #{quote('id')} = #{id} RETURNING *"
+        query = qb_strategy.normalize_update("UPDATE #{table} SET #{column_values.join(', ')} WHERE #{quote('id')} = #{id}")
         SqlQuery.new(query, record.values)
       end
 

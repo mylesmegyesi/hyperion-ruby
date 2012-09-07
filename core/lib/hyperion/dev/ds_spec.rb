@@ -30,7 +30,7 @@ shared_examples_for 'Datastore' do
       end
     end
 
-    it 'assigned keys are unique' do
+    it 'assigns unique keys to each record' do
       keys = ten_testing_records.map do |record|
         core.save(record)[:key]
       end
@@ -39,20 +39,27 @@ shared_examples_for 'Datastore' do
     end
 
     it 'can save many records' do
-      records = core.save_many(ten_testing_records)
-      records.length.should == 10
+      saved_records = core.save_many(ten_testing_records)
+      saved_records.length.should == 10
+      saved_names = Set.new(saved_records.map { |record| record[:name] })
       found_records = core.find_by_kind('testing')
       found_records.length.should == 10
-      names = Set.new(found_records.map { |record| record[:name] })
-      names.should == Set.new((1..10).to_a.map { |i| i.to_s })
+      found_names = Set.new(found_records.map { |record| record[:name] })
+      found_names.should == saved_names
     end
 
+  end
+
+  def remove_nils(record)
+    record.select do |field, value|
+      !value.nil?
+    end
   end
 
   context 'find by key' do
     it 'finds by key' do
       record = core.save({:kind => 'testing', :inti => 5})
-      core.find_by_key(record[:key]).should == record
+      remove_nils(core.find_by_key(record[:key])).should == remove_nils(record)
     end
   end
 
@@ -98,7 +105,7 @@ shared_examples_for 'Datastore' do
         [[[:data, '!=', 'one'], [:data, '!=', 'twelve'], [:data, '!=', 'twenty3']], ['the one', 'thirty4', 'forty4', 'forty5'], :data],
       ].each do |filters, result, field|
 
-          it filters.map {|f| f.to_s}.join(', ') do
+          it filters.map(&:to_s).join(', ') do
             found_records = core.find_by_kind('testing', :filters => filters)
             ints = Set.new(found_records.map {|record| record[field]})
             ints.should == Set.new(result)
@@ -118,7 +125,7 @@ shared_examples_for 'Datastore' do
         [[[:data, :asc], [:inti, :asc]], [44, 45, 1, 1, 34, 12, 23], :inti]
       ].each do |sorts, result, field|
 
-        it sorts.map {|f| f.to_s}.join(', ') do
+        it sorts.map(&:to_s).join(', ') do
           found_records = core.find_by_kind('testing', :sorts => sorts)
           ints = found_records.map {|record| record[field]}
           ints.should == result

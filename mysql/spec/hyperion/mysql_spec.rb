@@ -1,15 +1,16 @@
-require 'do_postgres'
-require 'hyperion/postgres'
+require 'do_mysql'
+require 'hyperion/mysql'
 require 'hyperion/sql/connection'
 require 'hyperion/dev/ds_spec'
 
 def create_table_sql(table_name)
   <<-QUERY
     CREATE TABLE #{table_name} (
-      id SERIAL PRIMARY KEY,
+      id INTEGER NOT NULL AUTO_INCREMENT,
       name VARCHAR(35),
       inti INTEGER,
-      data VARCHAR(32)
+      data VARCHAR(32),
+      PRIMARY KEY (id)
     );
   QUERY
 end
@@ -18,10 +19,10 @@ def drop_table_sql(table_name)
   "DROP TABLE IF EXISTS #{table_name};"
 end
 
-describe Hyperion::Postgres do
+describe Hyperion::Mysql do
 
   around :each do |example|
-    connection = DataObjects::Connection.new('postgres://localhost/hyperion_ruby')
+    connection = DataObjects::Connection.new('mysql://localhost:3306/hyperion_ruby?user=root')
 
     tables = ['testing', 'other_testing']
 
@@ -34,7 +35,7 @@ describe Hyperion::Postgres do
     end
 
     Hyperion::Sql::Connection.connection = connection
-    Hyperion::Core.datastore = Hyperion::Postgres.create_datastore
+    Hyperion::Core.datastore = Hyperion::Mysql.create_datastore
 
     example.run
 

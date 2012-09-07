@@ -11,6 +11,14 @@ module Hyperion
         apply_offset(sql_query, offset)
       end
 
+      def normalize_insert(sql_query_str)
+        "#{sql_query_str} RETURNING *"
+      end
+
+      def normalize_update(sql_query_str)
+        "#{sql_query_str} RETURNING *"
+      end
+
       private
 
       def apply_limit(sql_query, limit)
