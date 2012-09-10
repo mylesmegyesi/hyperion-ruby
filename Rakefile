@@ -46,7 +46,11 @@ namespace :mysql do
   package('mysql')
 end
 
-PROJECTS = [:core, :postgres, :mysql]
+namespace :sqlite do
+  package('sqlite')
+end
+
+PROJECTS = [:core, :postgres, :mysql, :sqlite]
 
 def create_task_for_all(task_name)
   task task_name => PROJECTS.map {|project| "#{project}:#{task_name}"}
