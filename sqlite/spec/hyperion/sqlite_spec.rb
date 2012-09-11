@@ -21,7 +21,7 @@ end
 describe Hyperion::Sqlite do
 
   around :each do |example|
-    connection = DataObjects::Connection.new('sqlite3://:memory:')
+    connection = DataObjects::Connection.new('sqlite3::memory:')
 
     tables = ['testing', 'other_testing']
 
