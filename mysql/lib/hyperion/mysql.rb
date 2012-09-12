@@ -1,3 +1,4 @@
+require 'do_mysql'
 require 'hyperion/sql/datastore'
 require 'hyperion/mysql/query_builder_strategy'
 require 'hyperion/mysql/query_executor_strategy'

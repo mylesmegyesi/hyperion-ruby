@@ -1,4 +1,4 @@
-require 'hyperion/sql/connection'
+require 'hyperion/sql'
 
 module Hyperion
   module Sql
@@ -26,7 +26,7 @@ module Hyperion
       end
 
       def connection
-        Connection.connection
+        Sql.connection
       end
 
     end

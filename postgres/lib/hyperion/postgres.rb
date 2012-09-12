@@ -1,3 +1,4 @@
+require 'do_postgres'
 require 'hyperion/sql/datastore'
 require 'hyperion/postgres/query_builder_strategy'
 require 'hyperion/postgres/query_executor_strategy'
