@@ -1,9 +1,17 @@
+require 'do_mysql'
 require 'hyperion/mysql'
 require 'hyperion/sql'
 require 'hyperion/dev/ds_spec'
+require 'hyperion/sql/transaction_spec'
 
-def create_table_sql(table_name)
-  <<-QUERY
+describe Hyperion::Mysql do
+
+  def execute(query)
+    Hyperion::Sql.connection.create_command(query).execute_non_query
+  end
+
+  def create_table(table_name)
+    execute <<-QUERY
     CREATE TABLE #{table_name} (
       id INTEGER NOT NULL AUTO_INCREMENT,
       name VARCHAR(35),
@@ -11,39 +19,33 @@ def create_table_sql(table_name)
       data VARCHAR(32),
       PRIMARY KEY (id)
     );
-  QUERY
-end
+    QUERY
+  end
 
-def drop_table_sql(table_name)
-  "DROP TABLE IF EXISTS #{table_name};"
-end
-
-describe Hyperion::Mysql do
+  def drop_table(table_name)
+    execute "DROP TABLE IF EXISTS #{table_name};"
+  end
 
   around :each do |example|
-    Hyperion::Sql.with_connection('mysql://localhost:3306/hyperion_ruby?user=root') do
-
-      connection = Hyperion::Sql.connection
-
-      tables = ['testing', 'other_testing']
-
-      tables.each do |table|
-        connection.create_command(drop_table_sql(table)).execute_non_query
-      end
-
-      tables.each do |table|
-        connection.create_command(create_table_sql(table)).execute_non_query
-      end
-
+    Hyperion::Sql.with_connection('mysql://localhost/hyperion_ruby') do |connection|
       Hyperion::Core.datastore = Hyperion::Mysql.create_datastore
-
       example.run
-
-      tables.each do |table|
-        connection.create_command(drop_table_sql(table)).execute_non_query
-      end
     end
   end
 
-  it_behaves_like 'Datastore'
+  context 'Datastore' do
+    around :each do |example|
+      tables = ['testing', 'other_testing']
+      begin
+        tables.each { |table| create_table(table) }
+        example.run
+      ensure
+        tables.each { |table| drop_table(table) }
+      end
+    end
+
+    include_examples 'Datastore'
+  end
+
+  it_behaves_like 'Sql Transactions'
 end
