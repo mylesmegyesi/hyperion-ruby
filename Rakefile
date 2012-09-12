@@ -13,9 +13,7 @@ def package(name)
   task :install do
     command(name, 'rake install')
   end
-end
 
-def spec(name)
   desc "Run #{name} specs"
   task :spec => :deps do
     command(name, 'bundle exec rspec')
@@ -38,34 +36,34 @@ end
 
 namespace :core do
   package('core')
-  spec('core')
 end
 
 namespace :postgres do
   package('postgres')
-  spec('postgres')
 end
 
 namespace :mysql do
   package('mysql')
-  spec('mysql')
 end
 
 namespace :sql do
   package('sql')
 end
 
-PROJECTS = [:core, :postgres, :mysql]
-ALL = [:core, :sql, :postgres, :mysql]
+namespace :sqlite do
+  package('sqlite')
+end
 
-def create_task_for_all(task_name, projects=PROJECTS)
-  task task_name => projects.map {|project| "#{project}:#{task_name}"}
+PROJECTS = [:core, :sql, :postgres, :mysql, :sqlite]
+
+def create_task_for_all(task_name)
+  task task_name => PROJECTS.map {|project| "#{project}:#{task_name}"}
 end
 
 desc 'Run the specs for Hyperion'
 create_task_for_all(:spec)
 
 desc 'Install Hyperion'
-create_task_for_all(:install, ALL)
+create_task_for_all(:install)
 
 task :default => [:spec, :install]
