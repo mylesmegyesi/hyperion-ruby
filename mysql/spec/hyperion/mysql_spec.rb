@@ -1,6 +1,5 @@
-require 'do_mysql'
 require 'hyperion/mysql'
-require 'hyperion/sql/connection'
+require 'hyperion/sql'
 require 'hyperion/dev/ds_spec'
 
 def create_table_sql(table_name)
@@ -22,28 +21,28 @@ end
 describe Hyperion::Mysql do
 
   around :each do |example|
-    connection = DataObjects::Connection.new('mysql://localhost:3306/hyperion_ruby?user=root')
+    Hyperion::Sql.with_connection('mysql://localhost:3306/hyperion_ruby?user=root') do
 
-    tables = ['testing', 'other_testing']
+      connection = Hyperion::Sql.connection
 
-    tables.each do |table|
-      connection.create_command(drop_table_sql(table)).execute_non_query
+      tables = ['testing', 'other_testing']
+
+      tables.each do |table|
+        connection.create_command(drop_table_sql(table)).execute_non_query
+      end
+
+      tables.each do |table|
+        connection.create_command(create_table_sql(table)).execute_non_query
+      end
+
+      Hyperion::Core.datastore = Hyperion::Mysql.create_datastore
+
+      example.run
+
+      tables.each do |table|
+        connection.create_command(drop_table_sql(table)).execute_non_query
+      end
     end
-
-    tables.each do |table|
-      connection.create_command(create_table_sql(table)).execute_non_query
-    end
-
-    Hyperion::Sql::Connection.connection = connection
-    Hyperion::Core.datastore = Hyperion::Mysql.create_datastore
-
-    example.run
-
-    tables.each do |table|
-      connection.create_command(drop_table_sql(table)).execute_non_query
-    end
-
-    connection.close
   end
 
   it_behaves_like 'Datastore'

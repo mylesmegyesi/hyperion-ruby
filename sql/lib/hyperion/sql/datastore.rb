@@ -1,5 +1,4 @@
 require 'hyperion/core'
-require 'hyperion/sql/connection'
 require 'hyperion/sql/key'
 require 'hyperion/sql/query_builder'
 require 'hyperion/sql/query_executor'

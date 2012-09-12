@@ -9,8 +9,12 @@ module Hyperion
 
       attr_writer :datastore
 
+      def datastore=(datastore)
+        Thread.current[:datastore] = datastore
+      end
+
       def datastore
-        @datastore || raise('No Datastore installed')
+        Thread.current[:datastore] || raise('No Datastore installed')
       end
 
       def save(record, attrs={})
