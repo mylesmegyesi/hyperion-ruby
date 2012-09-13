@@ -1,41 +1,41 @@
 shared_examples_for 'Datastore' do
 
-  def core
-    Hyperion::Core
+  def api
+    Hyperion::API
   end
 
   context 'save' do
 
     it 'saves a hash and returns it' do
-      record = core.save({:kind => 'testing', :name => 'ann'})
+      record = api.save({:kind => 'testing', :name => 'ann'})
       record[:kind].should == 'testing'
       record[:name].should == 'ann'
     end
 
     it 'saves an empty record' do
-      record = core.save({:kind => 'testing'})
+      record = api.save({:kind => 'testing'})
       record[:kind].should == 'testing'
     end
 
     it 'assigns a key to new records' do
-      record = core.save({:kind => 'testing', :name => 'ann'})
+      record = api.save({:kind => 'testing', :name => 'ann'})
       record[:key].should_not be_nil
     end
 
     it 'saves an existing record' do
-      record1 = core.save({:kind => 'other_testing', :name => 'ann'})
-      record2 = core.save(record1.merge(:name => 'james'))
+      record1 = api.save({:kind => 'other_testing', :name => 'ann'})
+      record2 = api.save(record1.merge(:name => 'james'))
       record1[:key].should == record2[:key]
-      core.find_by_kind('other_testing').length.should == 1
+      api.find_by_kind('other_testing').length.should == 1
     end
 
     it 'saves an existing record to be empty' do
-      record1 = core.save({:kind => 'other_testing', :name => 'ann'})
+      record1 = api.save({:kind => 'other_testing', :name => 'ann'})
       record2 = record1.dup
       record2.delete(:name)
-      record2 = core.save(record2)
+      record2 = api.save(record2)
       record1[:key].should == record2[:key]
-      core.find_by_kind('other_testing').length.should == 1
+      api.find_by_kind('other_testing').length.should == 1
     end
 
     def ten_testing_records(kind = 'testing')
@@ -46,17 +46,17 @@ shared_examples_for 'Datastore' do
 
     it 'assigns unique keys to each record' do
       keys = ten_testing_records.map do |record|
-        core.save(record)[:key]
+        api.save(record)[:key]
       end
       unique_keys = Set.new(keys)
       unique_keys.length.should == 10
     end
 
     it 'can save many records' do
-      saved_records = core.save_many(ten_testing_records)
+      saved_records = api.save_many(ten_testing_records)
       saved_records.length.should == 10
       saved_names = Set.new(saved_records.map { |record| record[:name] })
-      found_records = core.find_by_kind('testing')
+      found_records = api.find_by_kind('testing')
       found_records.length.should == 10
       found_names = Set.new(found_records.map { |record| record[:name] })
       found_names.should == saved_names
@@ -73,14 +73,14 @@ shared_examples_for 'Datastore' do
 
   context 'find by key' do
     it 'finds by key' do
-      record = core.save({:kind => 'testing', :inti => 5})
-      remove_nils(core.find_by_key(record[:key])).should == remove_nils(record)
+      record = api.save({:kind => 'testing', :inti => 5})
+      remove_nils(api.find_by_key(record[:key])).should == remove_nils(record)
     end
   end
 
   context 'find by kind' do
     before :each do
-      core.save_many([
+      api.save_many([
         {:kind => 'testing', :inti => 1,  :data => 'one'    },
         {:kind => 'testing', :inti => 12, :data => 'twelve' },
         {:kind => 'testing', :inti => 23, :data => 'twenty3'},
@@ -92,8 +92,8 @@ shared_examples_for 'Datastore' do
     end
 
     it 'filters by the kind' do
-      core.save({:kind => 'other_testing', :inti => 5})
-      found_records = core.find_by_kind('testing')
+      api.save({:kind => 'other_testing', :inti => 5})
+      found_records = api.find_by_kind('testing')
       found_records.each do |record|
         record[:kind].should == 'testing'
       end
@@ -121,7 +121,7 @@ shared_examples_for 'Datastore' do
       ].each do |filters, result, field|
 
           it filters.map(&:to_s).join(', ') do
-            found_records = core.find_by_kind('testing', :filters => filters)
+            found_records = api.find_by_kind('testing', :filters => filters)
             ints = Set.new(found_records.map {|record| record[field]})
             ints.should == Set.new(result)
           end
@@ -141,7 +141,7 @@ shared_examples_for 'Datastore' do
       ].each do |sorts, result, field|
 
         it sorts.map(&:to_s).join(', ') do
-          found_records = core.find_by_kind('testing', :sorts => sorts)
+          found_records = api.find_by_kind('testing', :sorts => sorts)
           ints = found_records.map {|record| record[field]}
           ints.should == result
         end
@@ -150,16 +150,16 @@ shared_examples_for 'Datastore' do
 
     context 'limit and offset' do
       specify 'offset n returns results starting at the nth record' do
-        found_records = core.find_by_kind('testing', :sorts => [[:inti, :asc]], :offset => 2)
+        found_records = api.find_by_kind('testing', :sorts => [[:inti, :asc]], :offset => 2)
         ints = found_records.map {|record| record[:inti]}
         ints.should == [12, 23, 34, 44, 45]
       end
 
       specify 'limit n takes only the first n records' do
-        found_records = core.find_by_kind('testing', :sorts => [[:inti, :asc]], :limit => 2)
+        found_records = api.find_by_kind('testing', :sorts => [[:inti, :asc]], :limit => 2)
         found_records.map {|record| record[:inti]}.should == [1, 1]
 
-        found_records = core.find_by_kind('testing', :sorts => [[:inti, :asc]], :limit => 1_000_000)
+        found_records = api.find_by_kind('testing', :sorts => [[:inti, :asc]], :limit => 1_000_000)
         found_records.map {|record| record[:inti]}.should == [1, 1, 12, 23, 34, 44, 45]
       end
 
@@ -171,7 +171,7 @@ shared_examples_for 'Datastore' do
         [{:limit => 2, :offset => 4}, [[:inti, :desc]], [12,  1]],
       ].each do |constraints, sorts, result|
           example constraints.inspect do
-            found_records = core.find_by_kind 'testing', constraints.merge(:sorts => sorts)
+            found_records = api.find_by_kind 'testing', constraints.merge(:sorts => sorts)
             found_records.map { |record| record[:inti] }.should == result
           end
         end
@@ -181,17 +181,17 @@ shared_examples_for 'Datastore' do
   context 'delete' do
 
     before :each do
-      core.save_many([
+      api.save_many([
         {:kind => 'testing', :inti => 1,  :data => 'one'    },
         {:kind => 'testing', :inti => 12, :data => 'twelve' }
       ])
     end
 
     it 'deletes by key' do
-      records = core.find_by_kind('testing')
+      records = api.find_by_kind('testing')
       record_to_delete = records.first
-      core.delete_by_key(record_to_delete[:key]).should be_nil
-      core.find_by_kind('testing').should_not include(record_to_delete)
+      api.delete_by_key(record_to_delete[:key]).should be_nil
+      api.find_by_kind('testing').should_not include(record_to_delete)
     end
 
     context 'filters' do
@@ -210,8 +210,8 @@ shared_examples_for 'Datastore' do
         [[[:inti, '=', 2]], [1, 12]]
       ].each do |filters, result|
         it filters.inspect do
-          core.delete_by_kind('testing', :filters => filters)
-          intis = core.find_by_kind('testing').map {|r| r[:inti]}
+          api.delete_by_kind('testing', :filters => filters)
+          intis = api.find_by_kind('testing').map {|r| r[:inti]}
           intis.should == result
         end
       end
@@ -222,7 +222,7 @@ shared_examples_for 'Datastore' do
   context 'count' do
 
     before :each do
-      core.save_many([
+      api.save_many([
         {:kind => 'testing', :inti => 1,  :data => 'one'    },
         {:kind => 'testing', :inti => 12, :data => 'twelve' }
       ])
@@ -244,7 +244,7 @@ shared_examples_for 'Datastore' do
         [[[:inti, '=', 2]], 0]
       ].each do |filters, result|
         it filters.inspect do
-          core.count_by_kind('testing', :filters => filters).should == result
+          api.count_by_kind('testing', :filters => filters).should == result
         end
       end
 

@@ -4,5 +4,5 @@ gemspec
 
 group :development, :test do
   gem 'hyperion-sql', :path => '../sql'
-  gem 'hyperion-core', :path => '../core'
+  gem 'hyperion-api', :path => '../api'
 end

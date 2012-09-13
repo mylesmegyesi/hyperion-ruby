@@ -1,4 +1,4 @@
-require 'hyperion/core'
+require 'hyperion/api'
 
 module Hyperion
   module Dev
@@ -11,7 +11,7 @@ module Hyperion
 
       def save(records)
         records.map do |record|
-          key = Core.new?(record) ? generate_key : record[:key]
+          key = API.new?(record) ? generate_key : record[:key]
           record[:key] = key
           store[key] = record
           record

@@ -3,6 +3,6 @@ source :rubygems
 gemspec
 
 group :development, :test do
-  gem 'hyperion-core', :path => '../core'
+  gem 'hyperion-api', :path => '../api'
   gem 'do_sqlite3', '0.10.8'
 end

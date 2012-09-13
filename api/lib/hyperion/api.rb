@@ -3,7 +3,7 @@ require 'hyperion/filter'
 require 'hyperion/sort'
 
 module Hyperion
-  class Core
+  class API
 
     class << self
 

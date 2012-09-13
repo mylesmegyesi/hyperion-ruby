@@ -3,7 +3,7 @@
 require File.expand_path('../../config', __FILE__)
 
 Gem::Specification.new do |gem|
-  gem.name                  = 'hyperion-core'
+  gem.name                  = 'hyperion-api'
   gem.description           = %q{A Generic Persistence API for Ruby}
   gem.summary               = %q{A Generic Persistence API for Ruby}
 

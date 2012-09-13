@@ -22,7 +22,7 @@ shared_examples_for 'Sql Transactions' do
   end
 
   def test_count
-    Hyperion::Core.count_by_kind('test')
+    Hyperion::API.count_by_kind('test')
   end
 
   context 'rollback' do

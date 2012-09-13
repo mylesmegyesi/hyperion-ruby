@@ -34,8 +34,8 @@ def command(dir, command)
   sh "cd #{dir_path(dir)} && #{command}"
 end
 
-namespace :core do
-  package('core')
+namespace :api do
+  package('api')
 end
 
 namespace :postgres do
@@ -54,7 +54,7 @@ namespace :sqlite do
   package('sqlite')
 end
 
-PROJECTS = [:core, :sql, :postgres, :mysql, :sqlite]
+PROJECTS = [:api, :sql, :postgres, :mysql, :sqlite]
 
 def create_task_for_all(task_name)
   task task_name => PROJECTS.map {|project| "#{project}:#{task_name}"}

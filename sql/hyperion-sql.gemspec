@@ -9,5 +9,5 @@ Gem::Specification.new do |gem|
 
   Hyperion.gem_config(gem)
 
-  gem.add_dependency('hyperion-core', Hyperion::VERSION)
+  gem.add_dependency('hyperion-api', Hyperion::VERSION)
 end

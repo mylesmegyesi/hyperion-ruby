@@ -1,4 +1,4 @@
-require 'hyperion/core'
+require 'hyperion/api'
 require 'hyperion/sql/key'
 require 'hyperion/sql/query_builder'
 require 'hyperion/sql/query_executor'
@@ -16,7 +16,7 @@ module Hyperion
 
       def save(records)
         records.map do |record|
-          if Core.new?(record)
+          if API.new?(record)
             execute_save_query(query_builder.build_insert(record), record)
           elsif non_empty_record?(record)
             execute_save_query(query_builder.build_update(record), record)
@@ -70,7 +70,7 @@ module Hyperion
       end
 
       def record_from_db(record, table)
-        record[:key] = Key.compose_key(table, record.delete('id')) if Core.new?(record)
+        record[:key] = Key.compose_key(table, record.delete('id')) if API.new?(record)
         record[:kind] = table
         record
       end
