@@ -114,10 +114,12 @@ describe Hyperion::API do
 
         context 'order' do
           {
-            'desc' => :desc,
-            :desc  => :desc,
-            'asc'  => :asc,
-            :asc   => :asc
+            'desc'       => :desc,
+            :desc        => :desc,
+            'descending' => :desc,
+            'asc'        => :asc,
+            :asc         => :asc,
+            'ascending'  => :asc
           }.each_pair do |order, result|
 
             it "#{order.inspect} to #{result.inspect}" do

@@ -9,42 +9,79 @@ module Hyperion
 
       attr_writer :datastore
 
+      # Sets the thread-local active datastore
       def datastore=(datastore)
         Thread.current[:datastore] = datastore
       end
 
+      # Returns the current thread-local datastore instance
       def datastore
         Thread.current[:datastore] || raise('No Datastore installed')
       end
 
+      #   Saves a record. Any additional parameters will get merged onto the record before it is saved.
+
+      #  Hyperion::API.save({:kind => :foo})
+      #  => {:kind=>"foo", :key=>"<generated key>"}
+      #  Hyperion::API.save({:kind => :foo}, :value => :bar)
+      #  => {:kind=>"foo", :value=>:bar, :key=>"<generated key>"}
       def save(record, attrs={})
         save_many([record.merge(attrs || {})]).first
       end
 
+      # Saves multiple records at once.
       def save_many(records)
         format_records(datastore.save(format_records(records)))
       end
 
+      # Returns true if the record is new (not saved/doesn't have a :key), false otherwise.
       def new?(record)
         !record.has_key?(:key)
       end
 
+      # Retrieves the value associated with the given key from the datastore. nil if it doesn't exist.
       def find_by_key(key)
         format_record(datastore.find_by_key(key))
       end
 
+      # Returns all records of the specified kind that match the filters provided.
+      #
+      #   find_by_kind(:dog) # returns all records with :kind of \"dog\"
+      #   find_by_kind(:dog, :filters => [[:name, '=', "Fido"]]) # returns all dogs whos name is Fido
+      #   find_by_kind(:dog, :filters => [[:age, '>', 2], [:age, '<', 5]]) # returns all dogs between the age of 2 and 5 (exclusive)
+      #   find_by_kind(:dog, :sorts => [[:name, :asc]]) # returns all dogs in alphebetical order of their name
+      #   find_by_kind(:dog, :sorts => [[:age, :desc], [:name, :asc]]) # returns all dogs ordered from oldest to youngest, and gos of the same age ordered by name
+      #   find_by_kind(:dog, :limit => 10) # returns upto 10 dogs in undefined order
+      #   find_by_kind(:dog, :sorts => [[:name, :asc]], :limit => 10) # returns upto the first 10 dogs in alphebetical order of their name
+      #   find_by_kind(:dog, :sorts => [[:name, :asc]], :limit => 10, :offset => 10) # returns the second set of 10 dogs in alphebetical order of their name
+      #
+      # Filter operations and acceptable syntax:
+      #   "=" "eq"
+      #   "<" "lt"
+      #   "<=" "lte"
+      #   ">" "gt"
+      #   ">=" "gte"
+      #   "!=" "not"
+      #   "contains?" "contains" "in?" "in"
+      #
+      # Sort orders and acceptable syntax:
+      #   :asc "asc" :ascending "ascending"
+      #   :desc "desc" :descending "descending"
       def find_by_kind(kind, args={})
         format_records(datastore.find(build_query(kind, args)))
       end
 
+      # Removes the record stored with the given key. Returns nil no matter what.
       def delete_by_key(key)
         datastore.delete_by_key(key)
       end
 
+      # Deletes all records of the specified kind that match the filters provided.
       def delete_by_kind(kind, args={})
         datastore.delete(build_query(kind, args))
       end
 
+      # Counts records of the specified kind that match the filters provided.
       def count_by_kind(kind, args={})
         datastore.count(build_query(kind, args))
       end
@@ -76,6 +113,12 @@ module Hyperion
 
       def format_order(order)
         order.to_sym
+        case order
+        when :desc, 'desc', 'descending'
+          :desc
+        when :asc, 'asc', 'ascending'
+          :asc
+        end
       end
 
       def format_operator(operator)
