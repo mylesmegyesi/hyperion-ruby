@@ -46,7 +46,7 @@ describe Hyperion::Postgres do
     context 'Sql Injection' do
       it 'escapes strings to be inserted' do
         evil_name = "my evil name' --"
-        record = Hyperion::API.save(kind: 'testing', name: evil_name)
+        record = Hyperion::API.save(:kind => 'testing', :name => evil_name)
         found_record = Hyperion::API.find_by_key(record[:key])
         found_record[:name].should == evil_name
       end
@@ -55,7 +55,7 @@ describe Hyperion::Postgres do
         evil_name = 'my evil name" --'
         error_message = ""
         begin
-          Hyperion::API.save(kind: 'my evil name" --', name: evil_name)
+          Hyperion::API.save(:kind => 'my evil name" --', :name => evil_name)
         rescue Exception => e
           error_message = e.message
         end
@@ -66,7 +66,7 @@ describe Hyperion::Postgres do
         evil_name = 'my evil name" --'
         error_message = ""
         begin
-          Hyperion::API.save(kind: 'testing', evil_name => 'value')
+          Hyperion::API.save(:kind => 'testing', evil_name => 'value')
         rescue Exception => e
           error_message = e.message
         end
