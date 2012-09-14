@@ -58,7 +58,7 @@ module Hyperion
 
       def quote(str)
         tick = qb_strategy.quote_tick
-        tick + str.to_s + tick
+        tick + str.to_s.gsub(tick, tick + tick) + tick
       end
 
       def format_column(column)

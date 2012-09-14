@@ -42,6 +42,37 @@ describe Hyperion::Postgres do
     end
 
     include_examples 'Datastore'
+
+    context 'Sql Injection' do
+      it 'escapes strings to be inserted' do
+        evil_name = "my evil name' --"
+        record = Hyperion::API.save(kind: 'testing', name: evil_name)
+        found_record = Hyperion::API.find_by_key(record[:key])
+        found_record[:name].should == evil_name
+      end
+
+      it 'escapes table names' do
+        evil_name = 'my evil name" --'
+        error_message = ""
+        begin
+          Hyperion::API.save(kind: 'my evil name" --', name: evil_name)
+        rescue Exception => e
+          error_message = e.message
+        end
+        error_message.should include('relation "my_evil_name"___" does not exist')
+      end
+
+      it 'escapes column names' do
+        evil_name = 'my evil name" --'
+        error_message = ""
+        begin
+          Hyperion::API.save(kind: 'testing', evil_name => 'value')
+        rescue Exception => e
+          error_message = e.message
+        end
+        error_message.should include('column "my_evil_name"___" of relation "testing" does not exist')
+      end
+    end
   end
 
   it_behaves_like 'Sql Transactions'
