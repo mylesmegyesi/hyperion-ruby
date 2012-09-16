@@ -8,4 +8,6 @@ Gem::Specification.new do |gem|
   gem.summary               = %q{A Generic Persistence API for Ruby}
 
   Hyperion.gem_config(gem)
+
+  gem.add_dependency('uuidtools', '2.1.3')
 end

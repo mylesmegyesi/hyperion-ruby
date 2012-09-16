@@ -1,5 +1,5 @@
+require 'hyperion/key'
 require 'hyperion/sql/sql_query'
-require 'hyperion/sql/key'
 
 module Hyperion
   module Sql
