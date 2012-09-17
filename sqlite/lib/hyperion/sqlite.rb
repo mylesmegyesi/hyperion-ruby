@@ -6,7 +6,7 @@ require 'hyperion/sqlite/db_strategy'
 module Hyperion
   module Sqlite
 
-    def self.create_datastore
+    def self.new(opts={})
       Sql::Datastore.new(DbStrategy.new, QueryExecutorStrategy.new, QueryBuilderStrategy.new)
     end
 

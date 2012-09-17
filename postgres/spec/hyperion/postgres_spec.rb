@@ -26,8 +26,7 @@ describe Hyperion::Postgres do
   end
 
   around :each do |example|
-    Hyperion::Sql.with_connection('postgres://localhost/hyperion_ruby') do |connection|
-      Hyperion::API.datastore = Hyperion::Postgres.create_datastore
+    Hyperion::Sql.with_connection_and_ds('postgres://localhost/hyperion_ruby', :postgres) do
       example.run
     end
   end

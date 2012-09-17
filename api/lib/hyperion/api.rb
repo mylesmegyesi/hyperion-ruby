@@ -1,6 +1,7 @@
 require 'hyperion/query'
 require 'hyperion/filter'
 require 'hyperion/sort'
+require 'hyperion/util'
 
 module Hyperion
   class API
@@ -17,6 +18,23 @@ module Hyperion
       # Returns the current thread-local datastore instance
       def datastore
         Thread.current[:datastore] || raise('No Datastore installed')
+      end
+
+      # Assigns the datastore within the given block
+      def with_datastore(name, opts={})
+        self.datastore = new_datastore(name, opts)
+        yield
+        self.datastore = nil
+      end
+
+      def new_datastore(name, opts={})
+        begin
+          require "hyperion/#{name}"
+        rescue LoadError
+          raise "Can't find datastore implementation: #{name}"
+        end
+        ds_klass = Hyperion.const_get(Util.class_name(name.to_s))
+        ds_klass.new(opts)
       end
 
       #   Saves a record. Any additional parameters will get merged onto the record before it is saved.

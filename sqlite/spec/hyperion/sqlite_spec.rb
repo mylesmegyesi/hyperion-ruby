@@ -26,8 +26,7 @@ describe Hyperion::Sqlite do
   end
 
   around :each do |example|
-    Hyperion::Sql.with_connection('sqlite3::memory:') do |connection|
-      Hyperion::API.datastore = Hyperion::Sqlite.create_datastore
+    Hyperion::Sql.with_connection_and_ds('sqlite3::memory:', :sqlite) do |connection|
       example.run
     end
   end

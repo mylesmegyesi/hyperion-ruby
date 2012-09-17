@@ -27,8 +27,7 @@ describe Hyperion::Mysql do
   end
 
   around :each do |example|
-    Hyperion::Sql.with_connection('mysql://localhost/hyperion_ruby') do |connection|
-      Hyperion::API.datastore = Hyperion::Mysql.create_datastore
+    Hyperion::Sql.with_connection_and_ds('mysql://localhost/hyperion_ruby', :mysql) do |connection|
       example.run
     end
   end

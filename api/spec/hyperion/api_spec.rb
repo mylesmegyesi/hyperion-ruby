@@ -14,6 +14,16 @@ describe Hyperion::API do
     end
   end
 
+  context 'factory' do
+    it 'bombs on unknown implementations' do
+      expect {api.new_datastore(:unknown)}.to raise_error("Can't find datastore implementation: unknown")
+    end
+
+    it 'creates a memory datastore' do
+      api.new_datastore(:memory).class.should == Hyperion::Memory
+    end
+  end
+
   context 'new?' do
     it 'false if a record exists' do
       api.new?({:key => 1}).should be_false
@@ -27,9 +37,14 @@ describe Hyperion::API do
   context 'with fake datastore' do
     attr_reader :fake_ds
 
-    before :each do
-      @fake_ds = FakeDatastore.new
-      api.datastore = @fake_ds
+    def fake_ds
+      Thread.current[:datastore]
+    end
+
+    around :each do |example|
+      api.with_datastore(:fake_ds) do
+        example.run
+      end
     end
 
     context 'save' do

@@ -7,7 +7,7 @@ require 'hyperion/postgres/db_strategy'
 module Hyperion
   module Postgres
 
-    def self.create_datastore
+    def self.new(opts={})
       Sql::Datastore.new(DbStrategy.new, QueryExecutorStrategy.new, QueryBuilderStrategy.new)
     end
 
