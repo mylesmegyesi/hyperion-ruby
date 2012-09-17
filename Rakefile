@@ -1,3 +1,5 @@
+require File.expand_path('../config', __FILE__)
+
 def package(name)
   desc "Clean #{name}"
   task :clean do
@@ -18,20 +20,34 @@ def package(name)
   task :spec => :deps do
     command(name, 'bundle exec rspec')
   end
+
+  task :remove_version_tag do
+    sh "git tag --delete v#{Hyperion::VERSION}" do |ok, res|
+    end
+  end
+
+  desc "Release #{name}"
+  task :release => :remove_version_tag do
+    command(name, 'rake release')
+  end
 end
 
 def dir_path(dir)
   File.expand_path(File.join('..', dir), __FILE__)
 end
 
+def dir_command(dir, command)
+  "cd #{dir_path(dir)} && #{command}"
+end
+
 def return_command(dir, command)
-  sh "cd #{dir_path(dir)} && #{command}" do |ok, res|
+  sh dir_command(dir, command) do |ok, res|
     return ok
   end
 end
 
 def command(dir, command)
-  sh "cd #{dir_path(dir)} && #{command}"
+  sh dir_command(dir, command)
 end
 
 namespace :api do
@@ -65,5 +81,8 @@ create_task_for_all(:spec)
 
 desc 'Install Hyperion'
 create_task_for_all(:install)
+
+desc 'Release all Hyperion gems'
+create_task_for_all(:release)
 
 task :default => [:spec, :install]
