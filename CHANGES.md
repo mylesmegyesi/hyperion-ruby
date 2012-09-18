@@ -1,3 +1,7 @@
+# 0.0.1.alpha4
+
+* ruby 1.8.7 compatibility fixes
+
 # 0.0.1.alpha3
 
 * adds a datastore factory and refactors all datastores to be compatible with it
