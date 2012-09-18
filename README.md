@@ -14,14 +14,14 @@ There are a few guiding principles for Hyperion.
 
 Hyperion Implementations:
 
- * [memory](https://github.com/mylesmegyesi/hyperion-ruby/blob/master/api/lib/hyperion/memory.rb) - an in-memory datastore, ideal for testing, included in hyperion-api.jar
+ * [memory](https://github.com/mylesmegyesi/hyperion-ruby/blob/master/api/lib/hyperion/memory.rb) - an in-memory datastore, ideal for testing, included in the hyperion-api gem
  * [mysql](https://github.com/mylesmegyesi/hyperion-ruby/tree/master/mysql) - [MySQL](http://www.mysql.com/)
  * [postgres](https://github.com/mylesmegyesi/hyperion-ruby/tree/master/postgres) - [PostgreSQL](http://www.postgresql.org/)
  * [sqlite](https://github.com/mylesmegyesi/hyperion-ruby/tree/master/sqlite) - [SQLite](http://www.sqlite.org/)
 
 ## Installation
 
-  gem 'hyperion-<impl here>'
+    gem 'hyperion-<impl here>'
 
 ## Usage
 
@@ -39,18 +39,18 @@ This will require the file "hyperion/<impl>" and instantiate the class Hyperion:
 
 Each implementation must accept a hash of options in their initializer
 
-  module Hyperion
-    class Memory
-      def initialize(opts={})
+    module Hyperion
+      class Memory
+        def initialize(opts={})
+        end
       end
     end
-  end
 
 ### Installing a datastore
 
-  # with brute force
-  Hyperion::API.datastore = Hyperion::API.new_datastore(:postgres, options)
-  # with elegance
-  Hyperion::API.with_datastore(:postgres, options)
+    # with brute force
+    Hyperion::API.datastore = Hyperion::API.new_datastore(:postgres, options)
+    # with elegance
+    Hyperion::API.with_datastore(:postgres, options)
 
 If you can bind the datastore once at high level in your application, that's ideal.  Otherwise use the brute force technique.
