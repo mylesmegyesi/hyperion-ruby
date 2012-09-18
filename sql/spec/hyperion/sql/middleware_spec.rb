@@ -1,5 +1,5 @@
-require 'hyperion/sql/middleware'
 require 'do_sqlite3'
+require 'hyperion/sql/middleware'
 
 describe Hyperion::Sql::Middleware do
 

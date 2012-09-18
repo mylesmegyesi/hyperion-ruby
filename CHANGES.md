@@ -1,3 +1,7 @@
+# 0.0.1.alpha6
+
+* refactors usage of thread local bindings
+
 # 0.0.1.alpha5
 
 * use GUIDs for savepoint names

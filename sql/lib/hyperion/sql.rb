@@ -1,17 +1,20 @@
 require 'data_objects'
 require 'hyperion/api'
 require 'hyperion/sql/transaction'
+require 'hyperion/util'
 
 module Hyperion
   module Sql
 
     def self.with_connection(url)
       connection = DataObjects::Connection.new(url)
-      Thread.current[:connection] = connection
-      result = yield
-      connection.close
-      Thread.current[:connection] = nil
-      result
+      begin
+        Util.bind(:connection, connection) do
+          yield
+        end
+      ensure
+        connection.close
+      end
     end
 
     def self.with_connection_and_ds(url, name, opts={})
@@ -53,25 +56,21 @@ module Hyperion
 
     private
 
-    def self.in_transaction?
-      !Thread.current[:transaction].nil?
-    end
-
     def self.with_txn
       if Thread.current[:transaction]
         yield(Thread.current[:transaction])
       else
-        txn = (Thread.current[:transaction] = Transaction.new(connection))
-        txn.begin
-        result = yield(txn)
-        txn.commit
-        result
+        txn = Transaction.new(connection)
+        Util.bind(:transaction, txn) do
+          txn.begin
+          result = yield(txn)
+          txn.commit
+          result
+        end
       end
     rescue Exception => e
       txn.rollback
       raise e
-    ensure
-      Thread.current[:transaction] = nil
     end
   end
 end

@@ -22,10 +22,9 @@ module Hyperion
 
       # Assigns the datastore within the given block
       def with_datastore(name, opts={})
-        self.datastore = new_datastore(name, opts)
-        result = yield
-        self.datastore = nil
-        result
+        Util.bind(:datastore, new_datastore(name, opts)) do
+          yield
+        end
       end
 
       def new_datastore(name, opts={})

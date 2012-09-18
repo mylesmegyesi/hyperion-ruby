@@ -40,6 +40,16 @@ module Hyperion
         end
       end
 
+      def bind(name, value)
+        old_value = Thread.current[name]
+        begin
+          Thread.current[name] = value
+          yield
+        ensure
+          Thread.current[name] = old_value
+        end
+      end
+
     end
 
   end
