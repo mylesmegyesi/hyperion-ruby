@@ -9,7 +9,7 @@ module Hyperion
 
       def class_name(str)
         cameled = camel_case(str)
-        cameled[0] = cameled[0].capitalize
+        cameled[0] = cameled[0...1].capitalize
         cameled
       end
 
