@@ -5,9 +5,9 @@ describe Hyperion::Sql::Middleware do
 
   def middleware(app)
     midd = Hyperion::Sql::Middleware.new(app, {
-      connection_url: 'sqlite3::memory:',
-      ds: :memory,
-      ds_opts: {someopts: 1}
+      :connection_url => 'sqlite3::memory:',
+      :ds => :memory,
+      :ds_opts => {:someopts => 1}
     })
   end
 
