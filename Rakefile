@@ -36,18 +36,8 @@ def dir_path(dir)
   File.expand_path(File.join('..', dir), __FILE__)
 end
 
-def dir_command(dir, command)
-  "cd #{dir_path(dir)} && #{command}"
-end
-
-def return_command(dir, command)
-  sh dir_command(dir, command) do |ok, res|
-    return ok
-  end
-end
-
 def command(dir, command)
-  sh dir_command(dir, command)
+  sh "cd #{dir_path(dir)} && #{command}"
 end
 
 namespace :api do
