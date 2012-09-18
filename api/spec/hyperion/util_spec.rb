@@ -15,6 +15,25 @@ describe Hyperion::Util do
     util.camel_case('with spaces').should == 'withSpaces'
     util.camel_case('with-dash').should == 'withDash'
     util.camel_case('starting Capital').should == 'startingCapital'
+    util.camel_case('StartingCapital').should == 'startingCapital'
+    util.camel_case('O').should == 'o'
+    util.camel_case('').should == ''
+    util.camel_case(nil).should == nil
+  end
+
+  it 'snake cases words' do
+    util.snake_case('fake_ds').should == 'fake_ds'
+    util.snake_case('defaultSceneName').should == 'default_scene_name'
+    util.snake_case('set defaultSceneName').should == 'set_default_scene_name'
+    util.snake_case('class_name').should == 'class_name'
+    util.snake_case('once_upon_a_time').should == 'once_upon_a_time'
+    util.snake_case('with spaces').should == 'with_spaces'
+    util.snake_case('with-dash').should == 'with_dash'
+    util.snake_case('starting Capital').should == 'starting_capital'
+    util.snake_case('StartingCapital').should == 'starting_capital'
+    util.snake_case('O').should == 'o'
+    util.snake_case('').should == ''
+    util.snake_case(nil).should == nil
   end
 
   it 'converts to class name' do
@@ -26,5 +45,10 @@ describe Hyperion::Util do
     util.class_name('with spaces').should == 'WithSpaces'
     util.class_name('with-dash').should == 'WithDash'
     util.class_name('starting Capital').should == 'StartingCapital'
+    util.class_name('StartingCapital').should == 'StartingCapital'
+    util.class_name('S').should == 'S'
+    util.class_name('s').should == 'S'
+    util.class_name('').should == ''
+    util.class_name(nil).should == nil
   end
 end

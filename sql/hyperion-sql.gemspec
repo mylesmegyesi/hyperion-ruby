@@ -10,5 +10,6 @@ Gem::Specification.new do |gem|
   Hyperion.gem_config(gem)
 
   gem.add_dependency('hyperion-api', Hyperion::VERSION)
+  gem.add_dependency('uuidtools', '2.1.3')
   gem.add_development_dependency('do_sqlite3', '0.10.8')
 end

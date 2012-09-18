@@ -1,16 +1,10 @@
-require 'socket'
-require 'digest'
-require 'digest/sha2'
+require 'uuidtools'
 
 module Hyperion
   module Sql
     class Transaction
 
-      HOST = "#{Socket::gethostbyname(Socket::gethostname)[0]}" rescue "localhost"
-
       attr_reader :connection
-
-      @@counter = 0
 
       def initialize(connection)
         @connection = connection
@@ -49,7 +43,7 @@ module Hyperion
       end
 
       def new_savepoint_id
-        Digest::SHA256.hexdigest("#{HOST}:#{$$}:#{Time.now.to_f}:#{@@counter += 1}")[0..-2]
+        UUIDTools::UUID.random_create.to_s.gsub(/-/, '')
       end
     end
   end

@@ -1,3 +1,7 @@
+# 0.0.1.alpha5
+
+* use GUIDs for savepoint names; refactor API string utils
+
 # 0.0.1.alpha4
 
 * ruby 1.8.7 compatibility fixes

@@ -167,7 +167,7 @@ module Hyperion
       def format_record(record)
         if record
           record = record.reduce({}) do |new_record, (key, value)|
-            new_record[snake_case(key.to_s).to_sym] = value
+            new_record[Util.snake_case(key.to_s).to_sym] = value
             new_record
           end
           record[:kind] = format_kind(record[:kind])
@@ -176,16 +176,11 @@ module Hyperion
       end
 
       def format_kind(kind)
-        snake_case(kind.to_s)
+        Util.snake_case(kind.to_s)
       end
 
       def format_field(field)
-        snake_case(field.to_s).to_sym
-      end
-
-      def snake_case(str)
-        separate_camel_humps = str.gsub(/([a-z0-9])([A-Z])/, '\1 \2').downcase
-        separate_camel_humps.gsub(/[ |\-]/, '_')
+        Util.snake_case(field.to_s).to_sym
       end
 
     end
