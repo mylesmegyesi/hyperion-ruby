@@ -79,7 +79,7 @@ If you can bind the datastore once at high level in your application, that's ide
     find_by_kind(:dog, :limit => 10) # returns upto 10 dogs in undefined order
     find_by_kind(:dog, :sorts => [[:name, :asc]], :limit => 10) # returns upto the first 10 dogs in alphebetical order of their name
     find_by_kind(:dog, :sorts => [[:name, :asc]], :limit => 10, :offset => 10) # returns the second set of 10 dogs in alphebetical order of their name
-    
+
 Filter operations and acceptable syntax:
 
     "=" "eq"
@@ -89,7 +89,7 @@ Filter operations and acceptable syntax:
     ">=" "gte"
     "!=" "not"
     "contains?" "contains" "in?" "in"
-    
+
 Sort orders and acceptable syntax:
 
     :asc "asc" :ascending "ascending"
@@ -105,15 +105,17 @@ Sort orders and acceptable syntax:
     delete_by_kind(:dog, :filters => [:name , "=", "Fido"]) ; deletes all dogs whos name is Fido
     delete_by_kind(:dog, :filters => [[:age, ">", 2], [:age, "<", 5]]) ; deletes all dogs between the age of 2 and 5 (exclusive)
 
-### Configuration
+### Entities
 
-Hyperion::API.configure_kind can be used to configure how hyperion persits a kind:
+Used to define entities. An entity is simply an encapulation of data that is persisted.
+The advantage of using entities are:
 
- * they limit the fields persisted to only what is specified in their definitio
+ * they limit the fields persisted to only what is specified in their definition
+ * default values can be assigned to fields
 
 Example:
 
-    Hyperion::API.configure_kind(:citizen) do |kind|
+    Hyperion::API.defentity(:citizen) do |kind|
       kind.field(:name)
       kind.field(:age)
       kind.field(:gender)

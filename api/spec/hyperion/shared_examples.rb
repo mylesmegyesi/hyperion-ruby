@@ -55,7 +55,7 @@ shared_examples_for 'record packing' do |actor|
     actor.call(record)
   }
 
-  Hyperion::API.configure_kind(:one_field) do |kind|
+  Hyperion::API.defentity(:one_field) do |kind|
     kind.field(:field, :default => 'ABC')
   end
 
@@ -69,7 +69,7 @@ shared_examples_for 'record packing' do |actor|
     result.should == {:kind => 'one_field', :key => '1234', :field => 'value'}
   end
 
-  Hyperion::API.configure_kind(:two_fields) do |kind|
+  Hyperion::API.defentity(:two_fields) do |kind|
     kind.field(:field1, :default => 'ABC')
     kind.field(:field2, :default => 'CBD')
   end
@@ -81,12 +81,12 @@ shared_examples_for 'record packing' do |actor|
 
   context 'Timestamps' do
 
-    Hyperion::API.configure_kind(:with_time) do |kind|
+    Hyperion::API.defentity(:with_time) do |kind|
       kind.field(:created_at)
       kind.field(:updated_at)
     end
 
-    Hyperion::API.configure_kind(:without_time) do |kind|
+    Hyperion::API.defentity(:without_time) do |kind|
     end
 
     before :each do

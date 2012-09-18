@@ -10,7 +10,7 @@ module Hyperion
 
     class << self
 
-      def configure_kind(kind)
+      def defentity(kind)
         kind_spec = KindSpec.new(Format.format_kind(kind))
         yield(kind_spec)
         save_kind_spec(kind_spec)
