@@ -1,6 +1,7 @@
 # 0.0.1.alpha6
 
 * refactors usage of thread local bindings
+* adds entities with fields, timestamps, and defaults
 
 # 0.0.1.alpha5
 

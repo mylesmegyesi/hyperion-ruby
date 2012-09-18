@@ -51,6 +51,5 @@ module Hyperion
       end
 
     end
-
   end
 end

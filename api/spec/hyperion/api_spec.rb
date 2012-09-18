@@ -71,15 +71,15 @@ describe Hyperion::API do
         api.datastore.saved_records.first.should == {:kind => 'one'}
       end
 
-      context 'record formatting on save' do
-        include_examples 'record formatting', lambda { |record|
+      context 'record packing on save' do
+        include_examples 'record packing', lambda { |record|
           Hyperion::API.save(record)
-          Hyperion::API.datastore.saved_records.first
+          Hyperion::API.datastore.saved_records.last
         }
       end
 
-      context 'record formatting on return from datastore' do
-        include_examples 'record formatting', lambda {|record|
+      context 'record unpacking on return from datastore' do
+        include_examples 'record unpacking', lambda {|record|
           Hyperion::API.datastore.returns = [[record]]
           Hyperion::API.save({})
         }
@@ -88,17 +88,17 @@ describe Hyperion::API do
 
     context 'save many' do
 
-      context 'record formatting on save' do
-        include_examples 'record formatting', lambda { |record|
+      context 'record packing on save' do
+        include_examples 'record packing', lambda { |record|
           Hyperion::API.save_many([record])
-          Hyperion::API.datastore.saved_records.first
+          Hyperion::API.datastore.saved_records.last
         }
       end
 
-      context 'record formatting on return from datastore' do
-        include_examples 'record formatting', lambda { |record|
+      context 'record unpacking on return from datastore' do
+        include_examples 'record unpacking', lambda { |record|
           Hyperion::API.datastore.returns = [[record]]
-          Hyperion::API.save_many([{}]).first
+          Hyperion::API.save_many([{}]).last
         }
       end
     end
@@ -162,7 +162,7 @@ describe Hyperion::API do
       end
 
       context 'formats records on return from ds' do
-        include_examples 'record formatting', lambda {|record|
+        include_examples 'record unpacking', lambda {|record|
           Hyperion::API.datastore.returns = [[record]]
           Hyperion::API.find_by_kind('kind').first
         }
@@ -213,7 +213,7 @@ describe Hyperion::API do
       end
 
       context 'formats records on return from ds' do
-        include_examples 'record formatting', lambda {|record|
+        include_examples 'record unpacking', lambda {|record|
           Hyperion::API.datastore.returns = [record]
           Hyperion::API.find_by_key('key')
         }

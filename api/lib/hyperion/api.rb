@@ -2,13 +2,19 @@ require 'hyperion/query'
 require 'hyperion/filter'
 require 'hyperion/sort'
 require 'hyperion/util'
+require 'hyperion/format'
 
 module Hyperion
+
   class API
 
     class << self
 
-      attr_writer :datastore
+      def configure_kind(kind)
+        kind_spec = KindSpec.new(Format.format_kind(kind))
+        yield(kind_spec)
+        save_kind_spec(kind_spec)
+      end
 
       # Sets the thread-local active datastore
       def datastore=(datastore)
@@ -49,7 +55,7 @@ module Hyperion
 
       # Saves multiple records at once.
       def save_many(records)
-        format_records(datastore.save(format_records(records)))
+        unpack_records(datastore.save(pack_records(records)))
       end
 
       # Returns true if the record is new (not saved/doesn't have a :key), false otherwise.
@@ -59,7 +65,7 @@ module Hyperion
 
       # Retrieves the value associated with the given key from the datastore. nil if it doesn't exist.
       def find_by_key(key)
-        format_record(datastore.find_by_key(key))
+        unpack_record(datastore.find_by_key(key))
       end
 
       # Returns all records of the specified kind that match the filters provided.
@@ -86,7 +92,7 @@ module Hyperion
       #   :asc "asc" :ascending "ascending"
       #   :desc "desc" :descending "descending"
       def find_by_kind(kind, args={})
-        format_records(datastore.find(build_query(kind, args)))
+        unpack_records(datastore.find(build_query(kind, args)))
       end
 
       # Removes the record stored with the given key. Returns nil no matter what.
@@ -107,7 +113,7 @@ module Hyperion
       private
 
       def build_query(kind, args)
-        kind = format_kind(kind)
+        kind = Format.format_kind(kind)
         filters = build_filters(args[:filters])
         sorts = build_sorts(args[:sorts])
         Query.new(kind, filters, sorts, args[:limit], args[:offset])
@@ -115,72 +121,121 @@ module Hyperion
 
       def build_filters(filters)
         (filters || []).map do |(field, operator, value)|
-          operator = format_operator(operator)
-          field = format_field(field)
+          operator = Format.format_operator(operator)
+          field = Format.format_field(field)
           Filter.new(field, operator, value)
         end
       end
 
       def build_sorts(sorts)
         (sorts || []).map do |(field, order)|
-          field = format_field(field)
-          order = format_order(order)
+          field = Format.format_field(field)
+          order = Format.format_order(order)
           Sort.new(field, order)
         end
       end
 
-      def format_order(order)
-        order.to_sym
-        case order
-        when :desc, 'desc', 'descending'
-          :desc
-        when :asc, 'asc', 'ascending'
-          :asc
-        end
-      end
-
-      def format_operator(operator)
-        case operator
-        when '=', 'eq'
-          '='
-        when '!=', 'not'
-          '!='
-        when '<', 'lt'
-          '<'
-        when '>', 'gt'
-          '>'
-        when '<=', 'lte'
-          '<='
-        when '>=', 'gte'
-          '>='
-        when 'contains?', 'contains', 'in?', 'in'
-          'contains?'
-        end
-      end
-
-      def format_records(records)
+      def unpack_records(records)
         records.map do |record|
-          format_record(record)
+          unpack_record(record)
         end
       end
 
-      def format_record(record)
+      def unpack_record(record)
         if record
-          record = record.reduce({}) do |new_record, (key, value)|
-            new_record[Util.snake_case(key.to_s).to_sym] = value
+          create_entity(record) do |field_spec, value|
+            value
+          end
+        end
+      end
+
+      def pack_records(records)
+        records.map do |record|
+          pack_record(record)
+        end
+      end
+
+      def pack_record(record)
+        if record
+          entity = create_entity(record) do |field_spec, value|
+            value || field_spec.default
+          end
+          update_timestamps(entity)
+        end
+      end
+
+      def update_timestamps(record)
+        new?(record) ? update_created_at(record) : update_updated_at(record)
+      end
+
+      def update_updated_at(record)
+        spec = kind_spec_for(record[:kind])
+        if spec && spec.fields.include?(:updated_at)
+          record[:updated_at] = Time.now
+        end
+        record
+      end
+
+      def update_created_at(record)
+        spec = kind_spec_for(record[:kind])
+        if spec && spec.fields.include?(:created_at)
+          record[:created_at] = Time.now
+        end
+        record
+      end
+
+      def create_entity(record)
+        record = Format.format_record(record)
+        kind = record[:kind]
+        spec = kind_spec_for(kind)
+        unless spec
+          record
+        else
+          key = record[:key]
+          base_record = {:kind => kind}
+          base_record[:key] = key if key
+          spec.fields.reduce(base_record) do |new_record, (name, spec)|
+            new_record[name] = yield(spec, record[name])
             new_record
           end
-          record[:kind] = format_kind(record[:kind])
-          record
         end
       end
 
-      def format_kind(kind)
-        Util.snake_case(kind.to_s)
+      def kind_spec_for(kind)
+        @kind_specs ||= {}
+        @kind_specs[kind]
       end
 
-      def format_field(field)
-        Util.snake_case(field.to_s).to_sym
+      def save_kind_spec(kind_spec)
+        @kind_specs ||= {}
+        @kind_specs[kind_spec.kind] = kind_spec
+      end
+
+      class FieldSpec
+
+        attr_reader :name, :default
+
+        def initialize(name, opts={})
+          @name = name
+          @default = opts[:default]
+        end
+
+      end
+
+      class KindSpec
+
+        attr_reader :kind, :fields
+
+        def initialize(kind)
+          @kind = kind
+          @fields = {}
+        end
+
+        def field(name, opts={})
+          name = Format.format_field(name)
+          @fields[name] = FieldSpec.new(name, opts)
+        end
+
       end
 
     end
