@@ -26,7 +26,7 @@ describe Hyperion::Sqlite do
   end
 
   around :each do |example|
-    Hyperion::Sql.with_connection_and_ds('sqlite3::memory:', :sqlite) do |connection|
+    Hyperion::Sql.with_connection_and_ds('sqlite3::memory:', :sqlite) do
       example.run
     end
   end
