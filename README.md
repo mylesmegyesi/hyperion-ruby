@@ -54,3 +54,77 @@ Each implementation must accept a hash of options in their initializer
     Hyperion::API.with_datastore(:postgres, options)
 
 If you can bind the datastore once at high level in your application, that's ideal.  Otherwise use the brute force technique.
+
+### Saving a value:
+
+    Hyperion::API.save({:kind => :foo})
+    => {:kind=>"foo", :key=>"<generated key>"}
+    Hyperion::API.save({:kind => :foo}, :value => :bar)
+    => {:kind=>"foo", :value=>:bar, :key=>"<generated key>"}
+
+### Updating a value:
+
+    record = Hyperion::API.save({:kind => :foo})
+    record[:name] = 'John'
+    Hyperion::API.save(record)
+    => {:kind=>"foo", :name=>'John', :key=>"<generated key>"}
+
+### Loading a value:
+
+    find_by_kind(:dog) # returns all records with :kind of \"dog\"
+    find_by_kind(:dog, :filters => [[:name, '=', "Fido"]]) # returns all dogs whos name is Fido
+    find_by_kind(:dog, :filters => [[:age, '>', 2], [:age, '<', 5]]) # returns all dogs between the age of 2 and 5 (exclusive)
+    find_by_kind(:dog, :sorts => [[:name, :asc]]) # returns all dogs in alphebetical order of their name
+    find_by_kind(:dog, :sorts => [[:age, :desc], [:name, :asc]]) # returns all dogs ordered from oldest to youngest, and gos of the same age ordered by name
+    find_by_kind(:dog, :limit => 10) # returns upto 10 dogs in undefined order
+    find_by_kind(:dog, :sorts => [[:name, :asc]], :limit => 10) # returns upto the first 10 dogs in alphebetical order of their name
+    find_by_kind(:dog, :sorts => [[:name, :asc]], :limit => 10, :offset => 10) # returns the second set of 10 dogs in alphebetical order of their name
+    
+Filter operations and acceptable syntax:
+
+    "=" "eq"
+    "<" "lt"
+    "<=" "lte"
+    ">" "gt"
+    ">=" "gte"
+    "!=" "not"
+    "contains?" "contains" "in?" "in"
+    
+Sort orders and acceptable syntax:
+
+    :asc "asc" :ascending "ascending"
+    :desc "desc" :descending "descending"
+
+### Deleting a value:
+
+    ; if you have a key...
+    delete_by_key(my-key)
+
+    ; otherwise
+    delete_by_kind(:dog) ; deletes all records with :kind of "dog"
+    delete_by_kind(:dog, :filters => [:name , "=", "Fido"]) ; deletes all dogs whos name is Fido
+    delete_by_kind(:dog, :filters => [[:age, ">", 2], [:age, "<", 5]]) ; deletes all dogs between the age of 2 and 5 (exclusive)
+
+### Configuration
+
+Hyperion::API.configure_kind can be used to configure how hyperion persits a kind:
+
+ * they limit the fields persisted to only what is specified in their definition.
+ * default values can be assigned to fields
+ * types, packers, and unpackers can be assigned to fields.  Packers
+     allow you to manipulate a field (perhaps serialize it) before it
+     is persisted.  Unpacker conversly manipulate fields when loaded.
+     Packers and unpackers maybe a fn (which will be excuted) or an
+     object used to pivot the pack and unpack multimethods.
+     A type (object) is simply a combined packer and unpacker.
+
+Example:
+
+    Hyperion::API.configure_kind(:citizen) do |kind|
+      kind.field(:name)
+      kind.field(:age)
+      kind.field(:gender)
+      kind.field(:country, default: 'USA')
+      kind.field(:created_at) # populated automaticaly
+      kind.field(:updated_at) # also populated automatically
+    end
