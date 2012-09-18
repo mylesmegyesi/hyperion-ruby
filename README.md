@@ -109,14 +109,7 @@ Sort orders and acceptable syntax:
 
 Hyperion::API.configure_kind can be used to configure how hyperion persits a kind:
 
- * they limit the fields persisted to only what is specified in their definition.
- * default values can be assigned to fields
- * types, packers, and unpackers can be assigned to fields.  Packers
-     allow you to manipulate a field (perhaps serialize it) before it
-     is persisted.  Unpacker conversly manipulate fields when loaded.
-     Packers and unpackers maybe a fn (which will be excuted) or an
-     object used to pivot the pack and unpack multimethods.
-     A type (object) is simply a combined packer and unpacker.
+ * they limit the fields persisted to only what is specified in their definitio
 
 Example:
 
