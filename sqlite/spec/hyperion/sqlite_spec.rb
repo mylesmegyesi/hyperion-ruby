@@ -1,8 +1,7 @@
-require 'do_sqlite3'
-require 'hyperion/sqlite'
-require 'hyperion/sql'
 require 'hyperion/dev/ds_spec'
+require 'hyperion/sql'
 require 'hyperion/sql/transaction_spec'
+require 'hyperion/sqlite'
 
 describe Hyperion::Sqlite do
 

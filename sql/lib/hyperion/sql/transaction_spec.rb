@@ -1,3 +1,6 @@
+require 'hyperion/api'
+require 'hyperion/sql'
+
 shared_examples_for 'Sql Transactions' do
   def write(query)
     command = Hyperion::Sql.connection.create_command(query)

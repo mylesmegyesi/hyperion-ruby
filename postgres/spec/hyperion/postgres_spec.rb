@@ -1,8 +1,7 @@
-require 'do_postgres'
-require 'hyperion/postgres'
-require 'hyperion/sql'
 require 'hyperion/dev/ds_spec'
+require 'hyperion/sql'
 require 'hyperion/sql/transaction_spec'
+require 'hyperion/postgres'
 
 describe Hyperion::Postgres do
 

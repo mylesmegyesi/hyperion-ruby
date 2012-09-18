@@ -1,8 +1,7 @@
-require 'do_mysql'
-require 'hyperion/mysql'
-require 'hyperion/sql'
 require 'hyperion/dev/ds_spec'
+require 'hyperion/sql'
 require 'hyperion/sql/transaction_spec'
+require 'hyperion/mysql'
 
 describe Hyperion::Mysql do
 

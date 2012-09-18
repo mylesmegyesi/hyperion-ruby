@@ -1,3 +1,4 @@
+require 'do_sqlite3'
 require 'hyperion/sql/datastore'
 require 'hyperion/sqlite/query_builder_strategy'
 require 'hyperion/sqlite/query_executor_strategy'

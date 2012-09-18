@@ -1,3 +1,4 @@
+require 'data_objects'
 require 'hyperion/api'
 require 'hyperion/sql/transaction'
 
@@ -7,14 +8,15 @@ module Hyperion
     def self.with_connection(url)
       connection = DataObjects::Connection.new(url)
       Thread.current[:connection] = connection
-      yield
+      result = yield
       connection.close
       Thread.current[:connection] = nil
+      result
     end
 
     def self.with_connection_and_ds(url, name, opts={})
-      with_connection(url) do
-        API.with_datastore(name, opts) do
+      API.with_datastore(name, opts) do
+        with_connection(url) do
           yield
         end
       end

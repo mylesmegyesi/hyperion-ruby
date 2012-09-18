@@ -1,6 +1,9 @@
 # 0.0.1.alpha5
 
-* use GUIDs for savepoint names; refactor API string utils
+* use GUIDs for savepoint names
+* refactor API string utils
+* fixes missing requires
+* fixes bug with API.with_datastore to return the block result
 
 # 0.0.1.alpha4
 

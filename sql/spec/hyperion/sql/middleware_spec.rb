@@ -43,4 +43,11 @@ describe Hyperion::Sql::Middleware do
     Thread.current[:transaction].should be_nil
   end
 
+  it 'returns the result' do
+    midd = middleware lambda { |env|
+      :return
+    }
+    midd.call(nil).should == :return
+  end
+
 end

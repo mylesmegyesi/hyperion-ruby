@@ -12,6 +12,12 @@ describe Hyperion::API do
     it 'will throw an error if the datastore is called before assignment' do
       expect{ subject.datastore }.to raise_error
     end
+
+    it 'assigns datastore and returns the result' do
+      api.with_datastore(:memory) do
+        :return
+      end.should == :return
+    end
   end
 
   context 'factory' do
