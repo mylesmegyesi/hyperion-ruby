@@ -15,5 +15,12 @@ module Hyperion
     def descending?
       order == :desc
     end
+
+    def to_h
+      {
+        :field => field,
+        :order => order
+      }
+    end
   end
 end

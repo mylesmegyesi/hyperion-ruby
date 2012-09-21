@@ -212,7 +212,7 @@ shared_examples_for 'Datastore' do
         it filters.inspect do
           api.delete_by_kind('testing', :filters => filters)
           intis = api.find_by_kind('testing').map {|r| r[:inti]}
-          intis.should == result
+          intis.should =~ result
         end
       end
 

@@ -40,27 +40,13 @@ def command(dir, command)
   sh "cd #{dir_path(dir)} && #{command}"
 end
 
-namespace :api do
-  package('api')
-end
+PROJECTS = [:api, :sql, :postgres, :mysql, :sqlite, :riak]
 
-namespace :postgres do
-  package('postgres')
+PROJECTS.each do |project|
+  namespace project do
+    package(project.to_s)
+  end
 end
-
-namespace :mysql do
-  package('mysql')
-end
-
-namespace :sql do
-  package('sql')
-end
-
-namespace :sqlite do
-  package('sqlite')
-end
-
-PROJECTS = [:api, :sql, :postgres, :mysql, :sqlite]
 
 def create_task_for_all(task_name)
   task task_name => PROJECTS.map {|project| "#{project}:#{task_name}"}
@@ -75,4 +61,4 @@ create_task_for_all(:install)
 desc 'Release all Hyperion gems'
 create_task_for_all(:release)
 
-task :default => [:spec, :install]
+task :default => :spec

@@ -8,5 +8,13 @@ module Hyperion
       @field = field
       @value = value
     end
+
+    def to_h
+      {
+        :operator => operator,
+        :field    => field,
+        :value    => value
+      }
+    end
   end
 end

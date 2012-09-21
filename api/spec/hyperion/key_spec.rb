@@ -36,6 +36,13 @@ describe Hyperion::Key do
     Hyperion::Key.compose_key(:foo, 1).should == Hyperion::Key.compose_key(:foo, 1)
   end
 
+  it 'composes and decomposes' do
+    kind = "testing"
+    id = "BLODQF0Z1DMEfQr7S3eBwfsX4ku"
+    key = Hyperion::Key.compose_key(kind, id)
+    Hyperion::Key.decompose_key(key).should == [kind, id]
+  end
+
   it 'decomposes keys' do
     key = Hyperion::Key.compose_key(:thing, 1)
     Hyperion::Key.decompose_key(key).should == ['thing', '1']

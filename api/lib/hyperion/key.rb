@@ -6,11 +6,11 @@ module Hyperion
     class << self
 
       def encode_key(value)
-        normalize(Base64.encode64(value))
+        normalize(encode(value))
       end
 
       def decode_key(value)
-        Base64.decode64(denormalize(value))
+        decode(denormalize(value))
       end
 
       def compose_key(kind, id=nil)
@@ -22,14 +22,22 @@ module Hyperion
         decode_key(key).split(/:/).map {|part| decode_key(part)}
       end
 
-      private
-
       def generate_id
         UUIDTools::UUID.random_create.to_s.gsub(/-/, '')
       end
 
+      private
+
+      def encode(str)
+        [str].pack('m').tr('+/','-_').gsub("\n",'')
+      end
+
+      def decode(str)
+        str.tr('-_','+/').unpack('m')[0]
+      end
+
       def normalize(value)
-        value.gsub(/=/, '').chomp
+        value.chomp.gsub(/=/, '')
       end
 
       def denormalize(value)

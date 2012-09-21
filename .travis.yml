@@ -14,3 +14,6 @@ before_script:
   - mysql -e 'create database hyperion_ruby;' -u root
 
 script: rake spec
+
+services:
+  - riak
