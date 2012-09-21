@@ -31,8 +31,8 @@ module Hyperion
 
     def self.rollback
       with_txn do |txn|
+        savepoint_id = txn.begin_savepoint
         begin
-          savepoint_id = txn.begin_savepoint
           yield
         ensure
           txn.rollback_to_savepoint(savepoint_id)
@@ -42,8 +42,8 @@ module Hyperion
 
     def self.transaction
       with_txn do |txn|
+        savepoint_id = txn.begin_savepoint
         begin
-          savepoint_id = txn.begin_savepoint
           result = yield
           txn.release_savepoint(savepoint_id)
           result
