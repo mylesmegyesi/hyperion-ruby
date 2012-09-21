@@ -6,6 +6,8 @@ Gem::Specification.new do |gem|
   gem.name                  = 'hyperion-postgres'
   gem.description           = %q{Postgres Datastore for Hyperion}
   gem.summary               = %q{Postgres Datastore for Hyperion}
+  gem.authors               = ['Myles Megyesi']
+  gem.email                 = ['myles@8thlight.com']
 
   Hyperion.gem_config(gem)
 

@@ -3,8 +3,6 @@ module Hyperion
 
   def self.gem_config(gem)
     gem.version               = VERSION
-    gem.authors               = ['8th Light, Inc.']
-    gem.email                 = ['myles@8thlight.com', 'skim@8thlight.com']
     gem.license               = 'Eclipse Public License'
     gem.homepage              = 'https://github.com/mylesmegyesi/hyperion-ruby'
     gem.required_ruby_version = '>=1.8.7'

@@ -6,6 +6,8 @@ Gem::Specification.new do |gem|
   gem.name                  = 'hyperion-sqlite'
   gem.description           = %q{SQLite Datastore for Hyperion}
   gem.summary               = %q{SQLite Datastore for Hyperion}
+  gem.authors               = ['Steve Kim']
+  gem.email                 = ['skim@8thlight.com']
 
   Hyperion.gem_config(gem)
 

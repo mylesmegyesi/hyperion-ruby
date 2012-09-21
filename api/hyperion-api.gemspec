@@ -6,6 +6,8 @@ Gem::Specification.new do |gem|
   gem.name                  = 'hyperion-api'
   gem.description           = %q{A Generic Persistence API for Ruby}
   gem.summary               = %q{A Generic Persistence API for Ruby}
+  gem.authors               = ['Myles Megyesi']
+  gem.email                 = ['myles@8thlight.com']
 
   Hyperion.gem_config(gem)
 
