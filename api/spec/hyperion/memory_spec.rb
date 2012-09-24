@@ -4,7 +4,7 @@ require 'hyperion/dev/ds_spec'
 describe Hyperion::Memory do
 
   around :each do |example|
-    Hyperion::API.with_datastore(:memory) do
+    Hyperion.with_datastore(:memory) do
       example.run
     end
   end

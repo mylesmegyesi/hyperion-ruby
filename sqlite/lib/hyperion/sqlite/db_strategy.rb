@@ -1,11 +1,11 @@
-require 'hyperion/api'
+require 'hyperion'
 
 module Hyperion
   module Sqlite
     class DbStrategy
 
       def process_result(given_record, result)
-        if API.new?(given_record)
+        if Hyperion.new?(given_record)
           given_record.merge('id' => result.insert_id)
         else
           given_record

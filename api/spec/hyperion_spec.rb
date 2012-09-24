@@ -1,11 +1,11 @@
-require 'hyperion/api'
+require 'hyperion'
 require 'hyperion/shared_examples'
 require 'hyperion/fake_ds'
 
-describe Hyperion::API do
+describe Hyperion do
 
   def api
-    Hyperion::API
+    Hyperion
   end
 
   context 'datastore' do
@@ -13,10 +13,26 @@ describe Hyperion::API do
       expect{ subject.datastore }.to raise_error
     end
 
-    it 'assigns datastore and returns the result' do
+    it 'assigns the datastore with brute force' do
+      api.datastore = :something
+      api.datastore.should == :something
+      api.datastore = nil
+    end
+
+    it 'assigns datastore with elegance and returns the result' do
       api.with_datastore(:memory) do
+        api.datastore.should be_a(Hyperion::Memory)
         :return
       end.should == :return
+    end
+
+    it 'prefers the thread-local datastore over the global datastore' do
+      api.datastore = :something_else
+      api.with_datastore(:memory) do
+        api.datastore.should be_a(Hyperion::Memory)
+      end
+      api.datastore = :something_else
+      api.datastore = nil
     end
   end
 
@@ -41,10 +57,9 @@ describe Hyperion::API do
   end
 
   context 'with fake datastore' do
-    attr_reader :fake_ds
 
     def fake_ds
-      Thread.current[:datastore]
+      api.datastore
     end
 
     around :each do |example|
@@ -73,15 +88,15 @@ describe Hyperion::API do
 
       context 'record packing on save' do
         include_examples 'record packing', lambda { |record|
-          Hyperion::API.save(record)
-          Hyperion::API.datastore.saved_records.last
+          Hyperion.save(record)
+          Hyperion.datastore.saved_records.last
         }
       end
 
       context 'record unpacking on return from datastore' do
         include_examples 'record unpacking', lambda {|record|
-          Hyperion::API.datastore.returns = [[record]]
-          Hyperion::API.save({})
+          Hyperion.datastore.returns = [[record]]
+          Hyperion.save({})
         }
       end
     end
@@ -90,15 +105,15 @@ describe Hyperion::API do
 
       context 'record packing on save' do
         include_examples 'record packing', lambda { |record|
-          Hyperion::API.save_many([record])
-          Hyperion::API.datastore.saved_records.last
+          Hyperion.save_many([record])
+          Hyperion.datastore.saved_records.last
         }
       end
 
       context 'record unpacking on return from datastore' do
         include_examples 'record unpacking', lambda { |record|
-          Hyperion::API.datastore.returns = [[record]]
-          Hyperion::API.save_many([{}]).last
+          Hyperion.datastore.returns = [[record]]
+          Hyperion.save_many([{}]).last
         }
       end
     end
@@ -106,15 +121,15 @@ describe Hyperion::API do
     context 'find by kind' do
       context 'parses kind' do
         include_examples 'kind formatting', lambda { |kind|
-          Hyperion::API.find_by_kind(kind)
-          Hyperion::API.datastore.queries.last.kind
+          Hyperion.find_by_kind(kind)
+          Hyperion.datastore.queries.last.kind
         }
       end
 
       context 'parses filters' do
         include_examples 'filtering', lambda { |filter|
-          Hyperion::API.find_by_kind('kind', :filters => [filter])
-          Hyperion::API.datastore.queries.last.filters.first
+          Hyperion.find_by_kind('kind', :filters => [filter])
+          Hyperion.datastore.queries.last.filters.first
         }
       end
 
@@ -128,8 +143,8 @@ describe Hyperion::API do
 
         context 'field' do
           include_examples 'field formatting', lambda { |field|
-            Hyperion::API.find_by_kind('kind', :sorts => [[field, 'desc']])
-            Hyperion::API.datastore.queries.first.sorts.first.field
+            Hyperion.find_by_kind('kind', :sorts => [[field, 'desc']])
+            Hyperion.datastore.queries.first.sorts.first.field
           }
         end
 
@@ -163,8 +178,8 @@ describe Hyperion::API do
 
       context 'formats records on return from ds' do
         include_examples 'record unpacking', lambda {|record|
-          Hyperion::API.datastore.returns = [[record]]
-          Hyperion::API.find_by_kind('kind').first
+          Hyperion.datastore.returns = [[record]]
+          Hyperion.find_by_kind('kind').first
         }
       end
     end
@@ -172,15 +187,15 @@ describe Hyperion::API do
     context 'delete by kind' do
       context 'parses kind' do
         include_examples 'kind formatting', lambda { |kind|
-          Hyperion::API.delete_by_kind(kind)
-          Hyperion::API.datastore.queries.last.kind
+          Hyperion.delete_by_kind(kind)
+          Hyperion.datastore.queries.last.kind
         }
       end
 
       context 'parses filters' do
         include_examples 'filtering', lambda { |filter|
-          Hyperion::API.delete_by_kind('kind', :filters => [filter])
-          Hyperion::API.datastore.queries.last.filters.first
+          Hyperion.delete_by_kind('kind', :filters => [filter])
+          Hyperion.datastore.queries.last.filters.first
         }
       end
     end
@@ -193,15 +208,15 @@ describe Hyperion::API do
     context 'count by kind' do
       context 'parses kind' do
         include_examples 'kind formatting', lambda { |kind|
-          Hyperion::API.count_by_kind(kind)
-          Hyperion::API.datastore.queries.last.kind
+          Hyperion.count_by_kind(kind)
+          Hyperion.datastore.queries.last.kind
         }
       end
 
       context 'parses filters' do
         include_examples 'filtering', lambda { |filter|
-          Hyperion::API.count_by_kind('kind', :filters => [filter])
-          Hyperion::API.datastore.queries.last.filters.first
+          Hyperion.count_by_kind('kind', :filters => [filter])
+          Hyperion.datastore.queries.last.filters.first
         }
       end
     end
@@ -214,8 +229,8 @@ describe Hyperion::API do
 
       context 'formats records on return from ds' do
         include_examples 'record unpacking', lambda {|record|
-          Hyperion::API.datastore.returns = [record]
-          Hyperion::API.find_by_key('key')
+          Hyperion.datastore.returns = [record]
+          Hyperion.find_by_key('key')
         }
       end
 

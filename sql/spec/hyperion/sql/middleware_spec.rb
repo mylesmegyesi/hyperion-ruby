@@ -29,10 +29,10 @@ describe Hyperion::Sql::Middleware do
 
   it 'assigns the datastore' do
     midd = middleware lambda { |env|
-      Hyperion::API.datastore.class.should == Hyperion::Memory
+      Hyperion.datastore.class.should == Hyperion::Memory
     }
     midd.call(nil)
-    expect {Hyperion::API.datastore}.to raise_error
+    expect {Hyperion.datastore}.to raise_error
   end
 
   it 'starts a transaction' do

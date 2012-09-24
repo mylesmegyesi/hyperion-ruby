@@ -1,4 +1,4 @@
-require 'hyperion/api'
+require 'hyperion'
 require 'hyperion/sql'
 
 shared_examples_for 'Sql Transactions' do
@@ -25,7 +25,7 @@ shared_examples_for 'Sql Transactions' do
   end
 
   def test_count
-    Hyperion::API.count_by_kind('test')
+    Hyperion.count_by_kind('test')
   end
 
   context 'rollback' do

@@ -1,5 +1,5 @@
 require 'data_objects'
-require 'hyperion/api'
+require 'hyperion'
 require 'hyperion/sql/transaction'
 require 'hyperion/util'
 
@@ -18,7 +18,7 @@ module Hyperion
     end
 
     def self.with_connection_and_ds(url, name, opts={})
-      API.with_datastore(name, opts) do
+      Hyperion.with_datastore(name, opts) do
         with_connection(url) do
           yield
         end

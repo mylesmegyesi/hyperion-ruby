@@ -1,7 +1,7 @@
 shared_examples_for 'Datastore' do
 
   def api
-    Hyperion::API
+    Hyperion
   end
 
   context 'save' do

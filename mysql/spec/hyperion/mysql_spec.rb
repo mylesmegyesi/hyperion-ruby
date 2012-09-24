@@ -47,15 +47,15 @@ describe Hyperion::Mysql do
     context 'Sql Injection' do
       it 'escapes strings to be inserted' do
         evil_name = "my evil name' --"
-        record = Hyperion::API.save(:kind => 'testing', :name => evil_name)
-        found_record = Hyperion::API.find_by_key(record[:key])
+        record = Hyperion.save(:kind => 'testing', :name => evil_name)
+        found_record = Hyperion.find_by_key(record[:key])
         found_record[:name].should == evil_name
       end
 
       it 'escapes table names' do
         error_message = ""
         begin
-          Hyperion::API.save(:kind => 'my evil name` --', :name => 'value')
+          Hyperion.save(:kind => 'my evil name` --', :name => 'value')
         rescue Exception => e
           error_message = e.message
         end
@@ -65,7 +65,7 @@ describe Hyperion::Mysql do
       it 'escapes column names' do
         error_message = ""
         begin
-          Hyperion::API.save(:kind => 'testing', 'my evil name` --' => 'value')
+          Hyperion.save(:kind => 'testing', 'my evil name` --' => 'value')
         rescue Exception => e
           error_message = e.message
         end

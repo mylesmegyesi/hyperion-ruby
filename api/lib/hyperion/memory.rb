@@ -1,4 +1,4 @@
-require 'hyperion/api'
+require 'hyperion'
 
 module Hyperion
   class Memory
@@ -10,7 +10,7 @@ module Hyperion
 
     def save(records)
       records.map do |record|
-        key = API.new?(record) ? generate_key : record[:key]
+        key = Hyperion.new?(record) ? generate_key : record[:key]
         record[:key] = key
         store[key] = record
         record
