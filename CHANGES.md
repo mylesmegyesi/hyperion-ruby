@@ -1,7 +1,7 @@
 # 0.0.1.alpha6
 
 * refactors usage of thread local bindings
-* adds entities with fields, timestamps, and defaults
+* adds entities with fields, timestamps, defaults, packers, unpackers, and types
 * collapses Hyperion::API into the root Hyperion module
 * refactors datastore setters
 

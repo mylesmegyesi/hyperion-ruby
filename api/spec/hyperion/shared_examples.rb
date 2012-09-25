@@ -79,6 +79,63 @@ shared_examples_for 'record packing' do |actor|
     actor.call(:kind => :two_fields, :field1 => 'john').should == {:kind => 'two_fields', :field1 => 'john', :field2 => 'CBD'}
   end
 
+  Hyperion.pack(Integer) do |value|
+    value ? value.to_i : value
+  end
+
+  Hyperion.pack(:up) do |value|
+    value ? value.upcase : value
+  end
+
+  Hyperion.pack(:down) do |value|
+    value ? value.downcase : value
+  end
+
+  Hyperion.defentity('nestedType') do |kind|
+    kind.field(:thingy, :type => Integer, :default => '2')
+    kind.field(:upped, :type => :up, :default => 'asdf')
+  end
+
+  Hyperion.defentity(:packable) do |kind|
+    kind.field(:widget,     :type   => Integer)
+    kind.field(:downed,     :type   => :down)
+    kind.field(:thing,      :type   => :nested_type)
+    kind.field(:bauble,     :packer => lambda {|value| value ? value.reverse : value})
+    kind.field(:bad_packer, :packer => true)
+    kind.field(:two_packer, :type   => Integer, :packer => lambda {|value| value ? value.reverse : value})
+  end
+
+  it 'packs the given type' do
+    result = actor.call(:kind => :packable, :downed => 'ABC', :widget => '1')
+    result[:downed].should == 'abc'
+    result[:widget].should == 1
+  end
+
+  it 'packs nested types' do
+    result = actor.call(:kind => :packable, :downed => 'ABC', :widget => '1')
+    result[:thing].should == {:kind => 'nested_type', :thingy => 2, :upped => 'ASDF'}
+  end
+
+  it 'packs nested types and merges existing data' do
+    result = actor.call(:kind => :packable, :downed => 'ABC', :widget => '1', :thing => {:upped => 'FDAS'})
+    result[:thing].should == {:kind => 'nested_type', :thingy => 2, :upped => 'FDAS'}
+  end
+
+  it 'packs with custom callables' do
+    result = actor.call(:kind => :packable, :bauble => 'cba')
+    result[:bauble].should == 'abc'
+  end
+
+  it 'custom callable must respond to `call`' do
+    result = actor.call(:kind => :packable, :bad_packer => 'thing')
+    result[:bad_packer].should == 'thing'
+  end
+
+  it 'prefers the custom packer over the type packer' do
+    result = actor.call(:kind => :packable, :two_packer => 'thing')
+    result[:two_packer].should == 'gniht'
+  end
+
   context 'Timestamps' do
 
     Hyperion.defentity(:with_time) do |kind|
@@ -124,6 +181,63 @@ shared_examples_for 'record unpacking' do |actor|
   it 'unpacks the key field if not defined' do
     result = actor.call(:kind => :one_field, :key => '1234', :field => 'value', :foo => 'bar')
     result.should == {:kind=>"one_field", :key => '1234', :field=>"value"}
+  end
+
+  Hyperion.unpack(Integer) do |value|
+    value ? value.to_i : value
+  end
+
+  Hyperion.unpack(:up) do |value|
+    value ? value.upcase : value
+  end
+
+  Hyperion.unpack(:down) do |value|
+    value ? value.downcase : value
+  end
+
+  Hyperion.defentity('nested') do |kind|
+    kind.field(:thingy, :type => Integer, :default => '2')
+    kind.field(:upped, :type => :up, :default => 'asdf')
+  end
+
+  Hyperion.defentity(:unpackable) do |kind|
+    kind.field(:widget,     :type   => Integer)
+    kind.field(:downed,     :type   => :down)
+    kind.field(:thing,      :type   => :nested_type)
+    kind.field(:bauble,     :unpacker => lambda {|value| value ? value.reverse : value})
+    kind.field(:bad_packer, :unpacker => true)
+    kind.field(:two_packer, :type   => Integer, :unpacker => lambda {|value| value ? value.reverse : value})
+  end
+
+  it 'unpacks the given type' do
+    result = actor.call(:kind => :unpackable, :downed => 'ABC', :widget => '1')
+    result[:downed].should == 'abc'
+    result[:widget].should == 1
+  end
+
+  it 'unpacks nested types' do
+    result = actor.call(:kind => :unpackable, :downed => 'ABC', :widget => '1')
+    result[:thing].should == {:kind => 'nested_type', :thingy => nil, :upped => nil}
+  end
+
+  it 'unpacks nested types and merges existing data' do
+    result = actor.call(:kind => :unpackable, :downed => 'ABC', :widget => '1', :thing => {:upped => 'FDAS'})
+    result[:thing].should == {:kind => 'nested_type', :thingy => nil, :upped => 'FDAS'}
+  end
+
+  it 'unpacks with custom callables' do
+    result = actor.call(:kind => :unpackable, :bauble => 'cba')
+    result[:bauble].should == 'abc'
+  end
+
+  it 'custom callable must respond to `call`' do
+    result = actor.call(:kind => :unpackable, :bad_packer => 'thing')
+    result[:bad_packer].should == 'thing'
+  end
+
+  it 'prefers the custom packer over the type packer' do
+    result = actor.call(:kind => :unpackable, :two_packer => 'thing')
+    result[:two_packer].should == 'gniht'
   end
 end
 

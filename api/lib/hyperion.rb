@@ -7,9 +7,22 @@ require 'hyperion/format'
 module Hyperion
 
   def self.defentity(kind)
-    kind_spec = KindSpec.new(Format.format_kind(kind))
+    kind = Format.format_kind(kind)
+    kind_spec = KindSpec.new(kind)
     yield(kind_spec)
     save_kind_spec(kind_spec)
+    pack(kind.to_sym) {|value| pack_record((value || {}).merge(:kind => kind))}
+    unpack(kind.to_sym) {|value| unpack_record((value || {}).merge(:kind => kind))}
+  end
+
+  def self.pack(type, &block)
+    @packers ||= {}
+    @packers[type] = block
+  end
+
+  def self.unpack(type, &block)
+    @unpackers ||= {}
+    @unpackers[type] = block
   end
 
   # Sets the active datastore
@@ -140,7 +153,7 @@ module Hyperion
   def self.unpack_record(record)
     if record
       create_entity(record) do |field_spec, value|
-        value
+        field_spec.unpack(value)
       end
     end
   end
@@ -154,10 +167,18 @@ module Hyperion
   def self.pack_record(record)
     if record
       entity = create_entity(record) do |field_spec, value|
-        value || field_spec.default
+        field_spec.pack(value || field_spec.default)
       end
       update_timestamps(entity)
     end
+  end
+
+  def self.packer_for(type)
+    @packers[type]
+  end
+
+  def self.unpacker_for(type)
+    @unpackers[type]
   end
 
   def self.update_timestamps(record)
@@ -214,6 +235,31 @@ module Hyperion
     def initialize(name, opts={})
       @name = name
       @default = opts[:default]
+      @type = opts[:type]
+      @packer = opts[:packer]
+      @unpacker = opts[:unpacker]
+    end
+
+    def pack(value)
+      if @packer && @packer.respond_to?(:call)
+        @packer.call(value)
+      elsif @type
+        type_packer = Hyperion.packer_for(@type)
+        type_packer ? type_packer.call(value) : value
+      else
+        value
+      end
+    end
+
+    def unpack(value)
+      if @unpacker && @unpacker.respond_to?(:call)
+        @unpacker.call(value)
+      elsif @type
+        type_packer = Hyperion.unpacker_for(@type)
+        type_packer ? type_packer.call(value) : value
+      else
+        value
+      end
     end
 
   end
