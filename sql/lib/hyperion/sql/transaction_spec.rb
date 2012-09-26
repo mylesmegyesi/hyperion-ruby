@@ -45,7 +45,7 @@ shared_examples_for 'Sql Transactions' do
           write("INSERT INTO test (name, age) VALUES ('Myles', 23)")
           test_count.should == 2
         end
-          test_count.should == 1
+        test_count.should == 1
       end
       test_count.should == 0
     end
