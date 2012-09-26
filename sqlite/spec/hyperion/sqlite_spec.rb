@@ -5,6 +5,8 @@ require 'hyperion/sqlite'
 
 describe Hyperion::Sqlite do
 
+  CONNECTION_URL = 'sqlite3::memory:'
+
   def execute(query)
     Hyperion::Sql.connection.create_command(query).execute_non_query
   end
@@ -24,25 +26,35 @@ describe Hyperion::Sqlite do
     execute "DROP TABLE IF EXISTS #{table_name};"
   end
 
+  TABLES = ['testing', 'other_testing']
+
   around :each do |example|
-    Hyperion::Sql.with_connection_and_ds('sqlite3::memory:', :sqlite) do
+    Hyperion.with_datastore(:sqlite, :connection_url => CONNECTION_URL) do
       example.run
     end
   end
 
-  context 'Datastore' do
+  before :each do |example|
+    Hyperion::Sql.with_connection(CONNECTION_URL) do
+      TABLES.each { |table| create_table(table) }
+    end
+  end
+
+  after :each do |example|
+    Hyperion::Sql.with_connection(CONNECTION_URL) do
+      TABLES.each { |table| drop_table(table) }
+    end
+  end
+
+  include_examples 'Datastore'
+
+  context 'Transactions' do
     around :each do |example|
-      Hyperion::Sql.rollback do
-        tables = ['testing', 'other_testing']
-        tables.each do |table|
-          create_table(table)
-        end
+      Hyperion::Sql.with_connection(CONNECTION_URL) do
         example.run
       end
     end
 
-    include_examples 'Datastore'
+    include_examples 'Sql Transactions'
   end
-
-  it_behaves_like 'Sql Transactions'
 end

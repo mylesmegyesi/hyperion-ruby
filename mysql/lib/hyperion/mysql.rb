@@ -8,7 +8,7 @@ module Hyperion
   module Mysql
 
     def self.new(opts={})
-      Sql::Datastore.new(DbStrategy.new, QueryExecutorStrategy.new, QueryBuilderStrategy.new)
+      Sql::Datastore.new(opts[:connection_url], DbStrategy.new, QueryExecutorStrategy.new, QueryBuilderStrategy.new)
     end
 
   end

@@ -8,53 +8,72 @@ module Hyperion
 
     class Datastore
 
-      def initialize(db_strategy, query_executor_strategy, query_builder_strategy)
+      def initialize(connection_url, db_strategy, query_executor_strategy, query_builder_strategy)
+        @connection_url = connection_url
         @db_strategy = db_strategy
         @query_executor = QueryExecutor.new(query_executor_strategy)
         @query_builder = QueryBuilder.new(query_builder_strategy)
       end
 
       def save(records)
-        records.map do |record|
-          if Hyperion.new?(record)
-            execute_save_query(query_builder.build_insert(record), record)
-          elsif non_empty_record?(record)
-            execute_save_query(query_builder.build_update(record), record)
-          else
-            record
+        with_connection do
+          records.map do |record|
+            if Hyperion.new?(record)
+              execute_save_query(query_builder.build_insert(record), record)
+            elsif non_empty_record?(record)
+              execute_save_query(query_builder.build_update(record), record)
+            else
+              record
+            end
           end
         end
       end
 
       def find_by_key(key)
-        find(query_from_key(key)).first
+        with_connection do
+          find(query_from_key(key)).first
+        end
       end
 
       def find(query)
-        sql_query = query_builder.build_select(query)
-        results = query_executor.execute_query(sql_query)
-        results.map { |record| record_from_db(record, query.kind) }
+        with_connection do
+          sql_query = query_builder.build_select(query)
+          results = query_executor.execute_query(sql_query)
+          results.map { |record| record_from_db(record, query.kind) }
+        end
       end
 
       def delete_by_key(key)
-        delete(query_from_key(key))
+        with_connection do
+          delete(query_from_key(key))
+        end
       end
 
       def delete(query)
-        sql_query = query_builder.build_delete(query)
-        query_executor.execute_mutation(sql_query)
-        nil
+        with_connection do
+          sql_query = query_builder.build_delete(query)
+          query_executor.execute_mutation(sql_query)
+          nil
+        end
       end
 
       def count(query)
-        sql_query = query_builder.build_count(query)
-        results = query_executor.execute_query(sql_query)
-        db_strategy.process_count_result(results[0])
+        with_connection do
+          sql_query = query_builder.build_count(query)
+          results = query_executor.execute_query(sql_query)
+          db_strategy.process_count_result(results[0])
+        end
       end
 
       private
 
       attr_reader :query_builder, :query_executor, :db_strategy
+
+      def with_connection
+        Sql.with_connection(@connection_url) do
+          yield
+        end
+      end
 
       def non_empty_record?(record)
         record = record.dup

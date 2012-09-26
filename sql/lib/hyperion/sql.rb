@@ -7,20 +7,16 @@ module Hyperion
   module Sql
 
     def self.with_connection(url)
-      connection = DataObjects::Connection.new(url)
-      begin
-        Util.bind(:connection, connection) do
-          yield
-        end
-      ensure
-        connection.close
-      end
-    end
-
-    def self.with_connection_and_ds(url, name, opts={})
-      Hyperion.with_datastore(name, opts) do
-        with_connection(url) do
-          yield
+      if Thread.current[:connection]
+        yield
+      else
+        connection = DataObjects::Connection.new(url)
+        begin
+          Util.bind(:connection, connection) do
+            yield
+          end
+        ensure
+          connection.close
         end
       end
     end

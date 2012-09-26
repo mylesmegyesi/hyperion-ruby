@@ -30,17 +30,19 @@ module Hyperion
         @app = app
         @connection_url = opts[:connection_url]
         @ds = opts[:ds]
-        @ds_opts = opts[:ds_opts]
+        @ds_opts = opts[:ds_opts] || {}
       end
 
       def call(env)
-        Sql.with_connection_and_ds(@connection_url, @ds, @ds_opts) do
-          Sql.transaction do
-            @app.call(env)
+        Hyperion.with_datastore(@ds, @ds_opts.merge(:connection_url => @connection_url)) do
+          Sql.with_connection(@connection_url) do
+            Sql.transaction do
+              @app.call(env)
+            end
           end
         end
-      end
 
+      end
     end
   end
 end

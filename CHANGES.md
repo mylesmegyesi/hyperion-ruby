@@ -4,6 +4,7 @@
 * adds entities with fields, timestamps, defaults, packers, unpackers, and types
 * collapses Hyperion::API into the root Hyperion module
 * refactors datastore setters
+* connection pooling
 
 # 0.0.1.alpha5
 
