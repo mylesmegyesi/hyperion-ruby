@@ -184,19 +184,22 @@ Hyperion.delete_by_kind(:dog, :filters => [[:age, ">", 2], [:age, "<", 5]]) # de
 
 ### Entities
 
-Used to define entities. An entity is simply an encapulation of data that is persisted.
-The advantage of using entities are:
+An entity is, in essence, configuration. By defining an entity, you are telling Hyperion how to save ('pack') and load ('unpack') a specific kind. Defining entites is not required or nessecary in some cases. Hyperion will work just fine without them. However, they offer some very clear advantages:
 
- * they limit the fields persisted to only what is specified in their definition
+ * whitelist: only fields defined in the entity are allowed into the datastore
  * default values can be assigned to fields
+ * types, packers and unpackers can be assigned to fields
+ * if created_at and updated_at defined on the entity, timestamps will be assigned
 
 Example:
 
-    Hyperion.defentity(:citizen) do |kind|
-      kind.field(:name)
-      kind.field(:age)
-      kind.field(:gender)
-      kind.field(:country, default: 'USA')
-      kind.field(:created_at) # populated automaticaly
-      kind.field(:updated_at) # also populated automatically
-    end
+``` ruby
+Hyperion.defentity(:citizen) do |kind|
+  kind.field(:name)
+  kind.field(:age)
+  kind.field(:gender)
+  kind.field(:country, default: 'USA')
+  kind.field(:created_at) # populated automaticaly
+  kind.field(:updated_at) # also populated automatically
+end
+```
