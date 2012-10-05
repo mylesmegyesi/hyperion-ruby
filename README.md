@@ -19,8 +19,6 @@ Hyperion Implementations:
  * [postgres](https://github.com/mylesmegyesi/hyperion-ruby/tree/master/postgres) - [PostgreSQL](http://www.postgresql.org/)
  * [sqlite](https://github.com/mylesmegyesi/hyperion-ruby/tree/master/sqlite) - [SQLite](http://www.sqlite.org/)
 
-# Usage
-
 ## Installation
 
 To use just the in-memory datastore...
@@ -284,7 +282,7 @@ end
 Hyperion.save(kind: :typed_2, age: '25')
 #=> {:kind=>"typed_2", :key=><generated_key>, :age=>2}
 ```
-# Contributing
+## Contributing
 
 Clone the master branch, and run all the tests:
 
@@ -296,13 +294,13 @@ rake
 
 Make patches and submit them along with an issue (see below).
 
-# Issues
+## Issues
 
 Post issues on the hyperion-ruby github project:
 
 * [https://github.com/mylesmegyesi/hyperion-ruby/issues](https://github.com/mylesmegyesi/hyperion-ruby/issues)
 
-# License
+## License
 
 Copyright (C) 2012 8th Light, All Rights Reserved.
 
