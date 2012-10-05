@@ -210,7 +210,7 @@ Hyperion.defentity(:defaulted) do |kind|
 end
 
 Hyperion.save(kind: :defaulted, name: 'Myles')
-#=> {:kind=>"whitelisted", :key=><generated_key>, :age=>25}
+#=> {:kind=>"whitelisted", :key=><generated_key>, :name=>"Myles", :age=>25}
 ```
 
 #### Packers
