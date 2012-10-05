@@ -19,6 +19,8 @@ Hyperion Implementations:
  * [postgres](https://github.com/mylesmegyesi/hyperion-ruby/tree/master/postgres) - [PostgreSQL](http://www.postgresql.org/)
  * [sqlite](https://github.com/mylesmegyesi/hyperion-ruby/tree/master/sqlite) - [SQLite](http://www.sqlite.org/)
 
+# Usage
+
 ## Installation
 
 To use just the in-memory datastore...
@@ -184,22 +186,124 @@ Hyperion.delete_by_kind(:dog, :filters => [[:age, ">", 2], [:age, "<", 5]]) # de
 
 ### Entities
 
-An entity is, in essence, configuration. By defining an entity, you are telling Hyperion how to save ('pack') and load ('unpack') a specific kind. Defining entites is not required or nessecary in some cases. Hyperion will work just fine without them. However, they offer some very clear advantages:
+An entity is, in essence, configuration. By defining an entity, you are telling Hyperion how to save ('pack') and load ('unpack') a specific kind. Defining entites is not required or nessecary in some cases. Hyperion will work just fine without them. However, they offer some very clear advantages.
 
- * whitelist: only fields defined in the entity are allowed into the datastore
- * default values can be assigned to fields
- * types, packers and unpackers can be assigned to fields
- * if created_at and updated_at defined on the entity, timestamps will be assigned
+#### Whitelisting
 
-Example:
+Only fields defined in the entity are allowed into the datastore.
 
 ``` ruby
-Hyperion.defentity(:citizen) do |kind|
-  kind.field(:name)
+Hyperion.defentity(:whitelisted) do |kind|
   kind.field(:age)
-  kind.field(:gender)
-  kind.field(:country, default: 'USA')
-  kind.field(:created_at) # populated automaticaly
-  kind.field(:updated_at) # also populated automatically
 end
+
+Hyperion.save(kind: :whitelisted, age: 23, hair_color: 'brown')
+#=> {:kind=>"whitelisted", :key=><generated_key>, :age=>23}
 ```
+
+#### Defaults
+
+Default values can be assigned to fields.
+
+``` ruby
+Hyperion.defentity(:defaulted) do |kind|
+  kind.field(:name)
+  kind.field(:age, :default => 25)
+end
+
+Hyperion.save(kind: :defaulted, name: 'Myles')
+#=> {:kind=>"whitelisted", :key=><generated_key>, :age=>25}
+```
+
+#### Packers
+
+Packers tell Hyperion how to treat certain fields when they are being saved.
+
+``` ruby
+Hyperion.defentity(:packed) do |kind|
+  kind.field(:age, :packer => lambda {|value| value.to_i})
+end
+
+Hyperion.save(kind: :packed, age: '25')
+#=> {:kind=>"packed", :key=><generated_key>, :age=>25}
+```
+A packer must be callable, i.e. respond to 'call'. The current value of a field will be passed to the packer, and the packer returns a potentially transformed value.
+
+#### Unpackers
+
+Unpackers tell Hyperion how to treat certain fields when they are being loaded.
+
+``` ruby
+Hyperion.defentity(:unpacked) do |kind|
+  kind.field(:age, :packer => lambda {|age| age.to_i}, :unpacker => lambda {|age| age.to_s})
+end
+
+Hyperion.save(kind: :unpacked, age: '25')
+#=> {:kind=>"unpacked", :key=><generated_key>, :age=>"25"}
+```
+An unpacker must be callable, i.e. respond to 'call'. The current value of a field will be passed to the unpacker, and the unpacker returns a potentially transformed value.
+
+#### Types
+
+Types are an easy way to share packers and unpackers between fields.
+
+``` ruby
+def to_int(value)
+  if value
+    value.to_i
+  end
+end
+
+def to_str(value)
+  if value
+    value.to_s
+  end
+end
+
+Hyperion.pack(Integer) {|value| to_int(value)}
+Hyperion.unpack(Integer) {|value| to_int(value)}
+Hyperion.pack(String) {|value| to_str(value)}
+Hyperion.unpack(String) {|value| to_str(value)}
+
+Hyperion.defentity(:typed) do |kind|
+  kind.field(:age, :type => Integer)
+  kind.field(:name, :type => String)
+end
+
+Hyperion.save(kind: :typed, age: '25', name: :a_symbol)
+ => {:kind=>"typed", :key=><generated_key>, :age=>25, :name=>"a_symbol"}
+```
+
+If a type is specified as well as a custom packer or unpacker, the custom packer has priority.
+
+``` ruby
+Hyperion.defentity(:typed_2) do |kind|
+  kind.field(:age, :type => Integer, :packer => lambda {|value| 2})
+end
+
+Hyperion.save(kind: :typed_2, age: '25')
+#=> {:kind=>"typed_2", :key=><generated_key>, :age=>2}
+```
+# Contributing
+
+Clone the master branch, and run all the tests:
+
+``` bash
+git clone git@github.com:mylesmegyesi/hyperion-ruby.git
+cd hyperion-ruby
+rake
+```
+
+Make patches and submit them along with an issue (see below).
+
+# Issues
+
+Post issues on the hyperion-ruby github project:
+
+* [https://github.com/mylesmegyesi/hyperion-ruby/issues](https://github.com/mylesmegyesi/hyperion-ruby/issues)
+
+# License
+
+Copyright (C) 2012 8th Light, All Rights Reserved.
+
+Distributed under the Eclipse Public License
