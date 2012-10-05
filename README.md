@@ -53,7 +53,7 @@ Hyperion.new_datastore(:sqlite, options)
 
 This will require the file "hyperion/\<impl\>" and instantiate the class Hyperion::\<impl camelcased\>
 
-Each implementation must accept a hash of options in their initializer
+Each implementation must accept a hash of options in it's initializer
 
 ``` ruby
 module Hyperion
@@ -79,7 +79,31 @@ end
 # datastore not installed
 ```
 
-This method is useful for applications that have control of the main thread, such as webapps. The call to with_datastore can be placed inside of a middleware, such that the datastore is installed at the beginning of the request and uninstalled after the request.
+This method is useful for applications that have control of the main thread, such as webapps. The call to with_datastore can be placed inside of a middleware, such that the datastore is installed at the beginning of the request and uninstalled after the request. For example, this is a Rack middleware which instantiates a postgres datastore, opens a pooled connection, starts a transaction and calls the next middleware.
+
+``` ruby
+require 'hyperion'
+require 'hyperion/sql'
+
+class DatastoreMiddleware
+
+  def initialize(app)
+    @app = app
+  end
+
+  def call(env)
+    Hyperion.with_datastore(:postgres, :connection_url => 'postgres://cspvswmv:bwTTUFRBRgnb@ec2-23-23-234-187.compute-1.amazonaws.com:5432/d1uh0jkh0n8j3l') do
+      Hyperion::Sql.with_connection(@connection_url) do
+        Hyperion::Sql.transaction do
+          @app.call(env)
+        end
+      end
+    end
+  end
+end
+```
+
+Each of these calls could, of course, be their own separate middlewares.
 
 #### With brute force
 
