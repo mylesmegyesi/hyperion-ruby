@@ -1,4 +1,4 @@
-Hyperion::Sqlite
+Hyperion::MySql
 =============
 
 For more information on Connections and Transactions, see the hyperion-sql [README](https://github.com/mylesmegyesi/hyperion-ruby/blob/master/sql/README.md)
@@ -6,5 +6,6 @@ For more information on Connections and Transactions, see the hyperion-sql [READ
 ## Installation
 
 ``` ruby
-gem 'hyperion-sqlite'
+gem 'hyperion-mysql'
 ```
+
