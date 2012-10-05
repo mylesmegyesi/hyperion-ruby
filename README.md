@@ -51,7 +51,7 @@ Hyperion.new_datastore(:postgres, options)
 Hyperion.new_datastore(:sqlite, options)
 ```
 
-This will require the file "hyperion/<impl>" and instantiate the class Hyperion::<impl camelcased>
+This will require the file "hyperion/\<impl\>" and instantiate the class Hyperion::\<impl camelcased\>
 
 Each implementation must accept a hash of options in their initializer
 
