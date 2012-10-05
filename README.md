@@ -66,6 +66,8 @@ end
 
 ### Installing a datastore
 
+Before you can use the Hyperion API, you must tell Hyperion which backend datastore you would like to use. There a couple of ways to go about this.
+
 #### With elegence
 
 This installs the datastore thread locally, and only within the given block.
@@ -120,33 +122,38 @@ To uninstall
 Hyperion.datastore = nil
 ```
 
-This method is useful for when you do not have control of the main thread, such as desktop GUI applications.
-If you can bind the datastore once at high level in your application, that's ideal.  Otherwise use the brute force technique.
+This method is useful for when you do not have control of the main thread, such as desktop GUI applications. If you can bind the datastore once at high level in your application, that's ideal.  Otherwise use the brute force technique.
 
 ### Saving a value:
 
-    Hyperion.save({:kind => :foo})
-    => {:kind=>"foo", :key=>"<generated key>"}
-    Hyperion.save({:kind => :foo}, :value => :bar)
-    => {:kind=>"foo", :value=>:bar, :key=>"<generated key>"}
+``` ruby
+Hyperion.save({:kind => :foo}) #=> {:kind=>"foo", :key=>"<generated key>"}
+Hyperion.save({:kind => :foo}, :value => :bar) #=> {:kind=>"foo", :value=>:bar, :key=>"<generated key>"}
+```
 
 ### Updating a value:
 
-    record = Hyperion.save({:kind => :foo})
-    record[:name] = 'John'
-    Hyperion.save(record)
-    => {:kind=>"foo", :name=>'John', :key=>"<generated key>"}
+``` ruby
+record = Hyperion.save({:kind => :foo, :name => 'Sam'})
+Hyperion.save(record, :name => 'John') #=> {:kind=>"foo", :name=>'John', :key=>"<generated key>"}
+```
 
 ### Loading a value:
 
-    find_by_kind(:dog) # returns all records with :kind of \"dog\"
-    find_by_kind(:dog, :filters => [[:name, '=', "Fido"]]) # returns all dogs whos name is Fido
-    find_by_kind(:dog, :filters => [[:age, '>', 2], [:age, '<', 5]]) # returns all dogs between the age of 2 and 5 (exclusive)
-    find_by_kind(:dog, :sorts => [[:name, :asc]]) # returns all dogs in alphebetical order of their name
-    find_by_kind(:dog, :sorts => [[:age, :desc], [:name, :asc]]) # returns all dogs ordered from oldest to youngest, and gos of the same age ordered by name
-    find_by_kind(:dog, :limit => 10) # returns upto 10 dogs in undefined order
-    find_by_kind(:dog, :sorts => [[:name, :asc]], :limit => 10) # returns upto the first 10 dogs in alphebetical order of their name
-    find_by_kind(:dog, :sorts => [[:name, :asc]], :limit => 10, :offset => 10) # returns the second set of 10 dogs in alphebetical order of their name
+``` ruby
+# if you have a key...
+Hyperion.find_by_key(my_key)
+
+# otherwise
+Hyperion.find_by_kind(:dog) # returns all records with :kind of \"dog\"
+Hyperion.find_by_kind(:dog, :filters => [[:name, '=', "Fido"]]) # returns all dogs whos name is Fido
+Hyperion.find_by_kind(:dog, :filters => [[:age, '>', 2], [:age, '<', 5]]) # returns all dogs between the age of 2 and 5 (exclusive)
+Hyperion.find_by_kind(:dog, :sorts => [[:name, :asc]]) # returns all dogs in alphebetical order of their name
+Hyperion.find_by_kind(:dog, :sorts => [[:age, :desc], [:name, :asc]]) # returns all dogs ordered from oldest to youngest, and gos of the same age ordered by name
+Hyperion.find_by_kind(:dog, :limit => 10) # returns upto 10 dogs in undefined order
+Hyperion.find_by_kind(:dog, :sorts => [[:name, :asc]], :limit => 10) # returns upto the first 10 dogs in alphebetical order of their name
+Hyperion.find_by_kind(:dog, :sorts => [[:name, :asc]], :limit => 10, :offset => 10) # returns the second set of 10 dogs in alphebetical order of their name
+```
 
 Filter operations and acceptable syntax:
 
@@ -165,13 +172,15 @@ Sort orders and acceptable syntax:
 
 ### Deleting a value:
 
-    ; if you have a key...
-    delete_by_key(my-key)
+``` ruby
+# if you have a key...
+Hyperion.delete_by_key(my_key)
 
-    ; otherwise
-    delete_by_kind(:dog) ; deletes all records with :kind of "dog"
-    delete_by_kind(:dog, :filters => [:name , "=", "Fido"]) ; deletes all dogs whos name is Fido
-    delete_by_kind(:dog, :filters => [[:age, ">", 2], [:age, "<", 5]]) ; deletes all dogs between the age of 2 and 5 (exclusive)
+# otherwise
+Hyperion.delete_by_kind(:dog) # deletes all records with :kind of "dog"
+Hyperion.delete_by_kind(:dog, :filters => [[:name, "=", "Fido"]]) # deletes all dogs whos name is Fido
+Hyperion.delete_by_kind(:dog, :filters => [[:age, ">", 2], [:age, "<", 5]]) # deletes all dogs between the age of 2 and 5 (exclusive)
+```
 
 ### Entities
 
