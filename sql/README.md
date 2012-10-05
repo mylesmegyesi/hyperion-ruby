@@ -1,6 +1,15 @@
 Hyperion::Sql
 =============
 
+This gem encapsulates the common behavior of the SQL datastores:
+
+  * Query building
+  * Query executing via [DataObjects](https://github.com/datamapper/do)
+  * Connections
+  * Transactions
+
+The cases where you will have to use the SQL package directly are detailed here.
+
 ## Instantiating a datastore
 
 When a SQL datastore is instantiated the connection-url must passed in as a parameter. This is the connection url that the datastore will use when attemting to communicate with the database.
