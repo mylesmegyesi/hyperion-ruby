@@ -92,8 +92,9 @@ class DatastoreMiddleware
   end
 
   def call(env)
-    Hyperion.with_datastore(:postgres, :connection_url => 'postgres://cspvswmv:bwTTUFRBRgnb@ec2-23-23-234-187.compute-1.amazonaws.com:5432/d1uh0jkh0n8j3l') do
-      Hyperion::Sql.with_connection(@connection_url) do
+    connection_url = 'postgres://cspvswmv:bwTTUFRBRgnb@ec2-23-23-234-187.compute-1.amazonaws.com:5432/d1uh0jkh0n8j3l'
+    Hyperion.with_datastore(:postgres, :connection_url => connection_url) do
+      Hyperion::Sql.with_connection(connection_url) do
         Hyperion::Sql.transaction do
           @app.call(env)
         end
