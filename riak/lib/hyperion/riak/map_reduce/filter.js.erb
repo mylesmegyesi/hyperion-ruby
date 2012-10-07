@@ -1,0 +1,33 @@
+function(riak_record) {
+  var data = Riak.mapValuesJson(riak_record)[0];
+  <% filters.each do |filter| %>
+    var value = <%= filter.value.to_json %>
+    var fieldValue = data[<%= filter.field.to_json %>];
+    <% operator = filter.operator %>
+    <% if operator == "contains?" %>
+      var found = false;
+      <% filter.value.each do |item| %>
+        if (fieldValue == <%= item.to_json %>) {
+          found = true;
+        }
+      <% end %>
+      if (!found) {
+        return [];
+      }
+    <% elsif operator == "=" %>
+      if (fieldValue !== value) {
+        return [];
+      }
+    <% elsif operator == "!=" %>
+      if (fieldValue == value) {
+        return [];
+      }
+    <% else %>
+      if (!(fieldValue <%= operator %> value)) {
+        return [];
+      }
+    <% end %>
+  <% end %>
+  data.riak_key = riak_record.key;
+  return [data];
+}

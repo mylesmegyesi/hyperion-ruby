@@ -1,0 +1,28 @@
+function(values) {
+  return values.sort(function(record1, record2) {
+    var field1, field2;
+    <% sorts.each do |sort| %>
+      <% field_json = sort.field.to_json %>
+      field1 = record1[<%= field_json %>];
+      field2 = record2[<%= field_json %>];
+      if (field1 !== field2) {
+        <% if sort.ascending? %>
+          if (field1 < field2) {
+            return -1;
+          } else {
+            return 1;
+          }
+        <% elsif sort.descending? %>
+          if (field1 > field2) {
+                return -1;
+          } else {
+            return 1;
+          }
+        <% else %>
+          return 1;
+        <% end %>
+      }
+    <% end %>
+    return 0;
+  });
+}

@@ -1,6 +1,6 @@
 require 'hyperion'
 require 'hyperion/key'
-require 'hyperion/riak/map_reduce_javascript'
+require 'hyperion/riak/map_reduce_js'
 require 'riak'
 
 module Hyperion
@@ -62,7 +62,7 @@ module Hyperion
 
       def count(query)
         mr = new_mapreduce(query)
-        mr.reduce(COUNT_REDUCTION, :keep => true)
+        mr.reduce(MapReduceJs.count, :keep => true)
         mr.run.first
       end
 
@@ -73,18 +73,18 @@ module Hyperion
       end
 
       def new_mapreduce(query)
-        mr = ::Riak::MapReduce.new(@client).add(bucket_name(query.kind)).map(VALUE_MAP)
-        query.filters.each {|filter| mr.reduce(FILTER_REDUCTION, :arg => filter.to_h)}
+        mr = ::Riak::MapReduce.new(@client).add(bucket_name(query.kind))
+        mr.map(MapReduceJs.filter(query.filters))
         sorts = query.sorts
-        mr.reduce(SORT_REDUCTION, :arg => sorts.map(&:to_h)) unless sorts.empty?
-        mr.reduce(OFFSET_REDUCTION, :arg => query.offset) if query.offset
-        mr.reduce(LIMIT_REDUCTION, :arg => query.limit) if query.limit
+        mr.reduce(MapReduceJs.sort(sorts)) unless sorts.empty?
+        mr.reduce(MapReduceJs.offset(query.offset)) if query.offset
+        mr.reduce(MapReduceJs.limit(query.limit)) if query.limit
         mr
       end
 
       def new_mapreduce_with_return(query)
         mr = new_mapreduce(query)
-        mr.reduce(PASS_THRU_REDUCTION, :keep => true)
+        mr.reduce(MapReduceJs.pass_thru, :keep => true)
       end
 
       def load_riak_key(bucket, kind, key)
