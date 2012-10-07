@@ -16,6 +16,11 @@ def package(name)
     command(name, 'rake install')
   end
 
+  desc "Prepare the CI box for the #{name} specs to run"
+  task :prepare_ci do
+    command(name, 'rake prepare_ci')
+  end
+
   desc "Run #{name} specs"
   task :spec => :deps do
     command(name, 'bundle exec rspec')
@@ -60,5 +65,8 @@ create_task_for_all(:install)
 
 desc 'Release all Hyperion gems'
 create_task_for_all(:release)
+
+desc 'Prepare the CI box for all Hyperion specs to run'
+create_task_for_all(:prepare_ci)
 
 task :default => :spec

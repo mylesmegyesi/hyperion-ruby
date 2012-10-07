@@ -1,1 +1,6 @@
 require 'bundler/gem_tasks'
+
+task :prepare_ci do
+  sh 'sudo service mysql start'
+  sh "mysql -e 'create database hyperion_ruby;' -u root"
+end

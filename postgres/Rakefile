@@ -1,1 +1,6 @@
 require 'bundler/gem_tasks'
+
+task :prepare_ci do
+  sh 'sudo service postgresql start'
+  sh "psql -c 'create database hyperion_ruby;' -U postgres"
+end

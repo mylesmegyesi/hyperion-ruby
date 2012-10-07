@@ -10,8 +10,6 @@ rvm:
   - ree
 
 before_script:
-  - psql -c 'create database hyperion_ruby;' -U postgres
-  - mysql -e 'create database hyperion_ruby;' -u root
-  - cd riak && rake prepare_ci
+  - rake prepare_ci
 
 script: rake spec

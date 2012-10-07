@@ -1,7 +1,8 @@
-desc 'Prepares the CI box for Riak specs to run'
+require 'bundler/gem_tasks'
+
 task :prepare_ci do
   config = File.expand_path('../ci/app.config', __FILE__)
+  sh 'sudo service riak stop'
   sh "sudo cp -f #{config} /etc/riak/app.config"
   sh 'sudo service riak start'
-  sh 'sleep 3'
 end
