@@ -1,0 +1,7 @@
+desc 'Prepares the CI box for Riak specs to run'
+task :prepare_ci do
+  config = File.expand_path('../ci/app.config', __FILE__)
+  sh "sudo cp -f #{config} /etc/riak/app.config"
+  sh 'sudo service riak start'
+  sh 'sleep 3'
+end
