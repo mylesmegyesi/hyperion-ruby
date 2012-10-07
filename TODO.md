@@ -4,7 +4,6 @@
 
 * Datastores
   * Redis
-  * Riak
   * Mongo
   * Elastic search
   * Datomic?

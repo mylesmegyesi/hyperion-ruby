@@ -5,6 +5,7 @@
 * collapses Hyperion::API into the root Hyperion module
 * refactors datastore setters
 * connection pooling
+* adds Riak implementation
 
 # 0.0.1.alpha5
 
