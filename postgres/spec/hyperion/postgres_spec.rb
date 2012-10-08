@@ -85,6 +85,7 @@ describe Hyperion::Postgres do
       rescue Exception => e
         error_message = e.message
       end
+      p "the error message is: #{error_message}"
       error_message.should include('column "my_evil_name"___" of relation "testing" does not exist')
     end
   end
