@@ -8,41 +8,27 @@ module Hyperion
     class Datastore
       def initialize(opts={})
         opts ||= {}
-        @app = opts[:app]
-        client_options = opts.reject {|k, v| k == :app}
-        @client = ::Riak::Client.new(client_options)
+        @app = opts[:app] || ''
+        @client = ::Riak::Client.new(opts.reject {|k, v| k == :app})
         @buckets = {}
       end
 
       def save(records)
         records.map do |record|
-          kind = record[:kind]
-          if Hyperion.new?(record)
-            record = record_to_db(record)
-            robject = bucket(kind).new
-            robject.data = record
-            robject.store
-            record_from_db(kind, robject.key, robject.data)
-          else
-            kind, riak_key = Hyperion::Key.decompose_key(record[:key])
-            record = record_to_db(record)
-            robject = bucket(kind).get(riak_key)
-            robject.data = robject.data.merge(record)
-            robject.store
-            record_from_db(kind, robject.key, robject.data)
-          end
+          Hyperion.new?(record) ? create(record) : update(record)
         end
       end
 
       def find_by_key(key)
         kind, riak_key = Hyperion::Key.decompose_key(key)
-        load_riak_key(bucket(kind), kind, riak_key)
+        robject = bucket(kind).get(riak_key)
+        record_from_db(kind, robject.key, robject.data)
       end
 
       def find(query)
-        mr = new_mapreduce_with_return(query)
+        mr = new_mapreduce_with_returned_result(query)
         mr.run.map do |record|
-          record_from_db(query.kind, record['riak_key'], record.merge('riak_key' => nil))
+          record_from_db(query.kind, record.delete('riak_key'), record)
         end
       end
 
@@ -53,7 +39,7 @@ module Hyperion
       end
 
       def delete(query)
-        mr = new_mapreduce_with_return(query)
+        mr = new_mapreduce_with_returned_result(query)
         mr.run.each do |record|
           delete_with_riak_key(query.kind, record['riak_key'])
         end
@@ -67,6 +53,23 @@ module Hyperion
       end
 
       private
+
+      def create(record)
+        kind = record[:kind]
+        robject = bucket(kind).new
+        robject.data = record_to_db(record)
+        robject.store
+        record_from_db(kind, robject.key, robject.data)
+      end
+
+      def update(record)
+        kind, riak_key = Hyperion::Key.decompose_key(record[:key])
+        record = record_to_db(record)
+        robject = bucket(kind).get(riak_key)
+        robject.data = robject.data.merge(record)
+        robject.store
+        record_from_db(kind, robject.key, robject.data)
+      end
 
       def delete_with_riak_key(kind, key)
         bucket(kind).delete(key)
@@ -82,21 +85,13 @@ module Hyperion
         mr
       end
 
-      def new_mapreduce_with_return(query)
+      def new_mapreduce_with_returned_result(query)
         mr = new_mapreduce(query)
         mr.reduce(MapReduceJs.pass_thru, :keep => true)
       end
 
-      def load_riak_key(bucket, kind, key)
-        robject = bucket.get(key)
-        record_from_db(kind, robject.key, robject.data)
-      end
-
       def record_to_db(record)
-        record.dup
-        record.delete(:kind)
-        record.delete(:key)
-        record
+        record.reject {|k, v| [:kind, :key].include?(k)}
       end
 
       def record_from_db(kind, riak_key, data)
