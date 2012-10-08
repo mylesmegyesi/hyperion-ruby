@@ -18,6 +18,7 @@ Hyperion Implementations:
  * [mysql](https://github.com/mylesmegyesi/hyperion-ruby/tree/master/mysql) - [MySQL](http://www.mysql.com/)
  * [postgres](https://github.com/mylesmegyesi/hyperion-ruby/tree/master/postgres) - [PostgreSQL](http://www.postgresql.org/)
  * [sqlite](https://github.com/mylesmegyesi/hyperion-ruby/tree/master/sqlite) - [SQLite](http://www.sqlite.org/)
+ * [riak](https://github.com/mylesmegyesi/hyperion-ruby/tree/master/riak) - [Riak](http://basho.com/products/riak-overview/)
 
 ## Installation
 
