@@ -62,6 +62,7 @@ module Hyperion
       end
 
       def format_column(column)
+        p "column to format is: #{column}"
         quote(column)
       end
 
