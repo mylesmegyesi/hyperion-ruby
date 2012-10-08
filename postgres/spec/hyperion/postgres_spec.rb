@@ -76,17 +76,5 @@ describe Hyperion::Postgres do
       end
       error_message.should include('relation "my_evil_name"___" does not exist')
     end
-
-    it 'escapes column names' do
-      evil_name = 'my evil name" --'
-      error_message = ""
-      begin
-        Hyperion.save(:kind => 'testing', evil_name => 'value')
-      rescue Exception => e
-        p e
-        error_message = e.message
-      end
-      error_message.should include('column "my_evil_name"___" of relation "testing" does not exist')
-    end
   end
 end
