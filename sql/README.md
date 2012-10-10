@@ -75,3 +75,27 @@ rescue
 end
 Hyperion.count_by_kind(:person) #=> 0
 ```
+
+## Contributing
+
+Clone the master branch, build, and run all the tests:
+
+``` bash
+git clone git@github.com:mylesmegyesi/hyperion-ruby.git
+cd hyperion-ruby/riak
+bundle install
+bundle exec rspec
+```
+
+## Issues
+
+Post issues on the hyperion-ruby github project:
+
+* [https://github.com/mylesmegyesi/hyperion-ruby/issues](https://github.com/mylesmegyesi/hyperion-ruby/issues)
+
+
+## License
+
+Copyright (C) 2012 8th Light All Rights Reserved.
+
+Distributed under the Eclipse Public License
