@@ -15,7 +15,7 @@ Clone the master branch, build, and run all the tests:
 
 ``` bash
 git clone git@github.com:mylesmegyesi/hyperion-ruby.git
-cd hyperion-ruby/riak
+cd hyperion-ruby/sqlite
 bundle install
 bundle exec rspec
 ```
