@@ -76,7 +76,9 @@ module Hyperion
       end
 
       def new_mapreduce(query)
-        mr = ::Riak::MapReduce.new(@client).add(bucket_name(query.kind))
+        mr = ::Riak::MapReduce.new(@client)
+        bucket_name = bucket_name(query.kind)
+        mr.index(bucket_name, '$bucket', bucket_name)
         mr.map(MapReduceJs.filter(query.filters))
         sorts = query.sorts
         mr.reduce(MapReduceJs.sort(sorts)) unless sorts.empty?
