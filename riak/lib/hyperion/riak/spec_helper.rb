@@ -2,24 +2,24 @@ def test_app_name
   '_HTEST_'
 end
 
-def empty_all_buckets
-  old = ::Riak.disable_list_keys_warnings
-  ::Riak.disable_list_keys_warnings = true
-  ::Riak::Client.new(:protocol => :pbc).buckets.each do |bucket|
-    if bucket.name.start_with?(test_app_name)
-      bucket.keys.each do |key|
-        bucket.delete(key)
-      end
+BUCKETS = ['testing', 'other_testing']
+
+def empty_buckets
+  client = ::Riak::Client.new(:protocol => :pbc)
+  BUCKETS.each do |bucket_name|
+    bucket_name = test_app_name + bucket_name
+    bucket = client.bucket(bucket_name)
+    bucket.get_index('$bucket', bucket_name).each do |key|
+      bucket.delete(key)
     end
   end
-  ::Riak.disable_list_keys_warnings = old
 end
 
 def with_testable_riak_datastore
   around :each do |example|
     Hyperion.with_datastore(:riak, :app => test_app_name, :protocol => :pbc) do
       example.run
-      empty_all_buckets
+      empty_buckets
     end
   end
 end
