@@ -4,10 +4,10 @@ end
 
 BUCKETS = ['testing', 'other_testing']
 
-def empty_buckets
-  client = ::Riak::Client.new(:protocol => :pbc)
+def empty_buckets(ds)
+  client = ds.instance_variable_get(:@client)
   BUCKETS.each do |bucket_name|
-    bucket_name = test_app_name + bucket_name
+    bucket_name = ds.send(:bucket_name, bucket_name)
     bucket = client.bucket(bucket_name)
     bucket.get_index('$bucket', bucket_name).each do |key|
       bucket.delete(key)
@@ -16,10 +16,11 @@ def empty_buckets
 end
 
 def with_testable_riak_datastore
+  ds = Hyperion.new_datastore(:riak, :app => test_app_name, :protocol => :pbc)
   around :each do |example|
-    Hyperion.with_datastore(:riak, :app => test_app_name, :protocol => :pbc) do
-      example.run
-      empty_buckets
-    end
+    Hyperion.datastore = ds
+    example.run
+    empty_buckets(ds)
+    Hyperion.datastore = nil
   end
 end
