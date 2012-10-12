@@ -57,18 +57,27 @@ module Hyperion
       def create(record)
         kind = record[:kind]
         robject = bucket(kind).new
-        robject.data = record_to_db(record)
-        robject.store
-        record_from_db(kind, robject.key, robject.data)
+        store(kind, robject, record_to_db(record))
       end
 
       def update(record)
         kind, riak_key = Hyperion::Key.decompose_key(record[:key])
-        record = record_to_db(record)
         robject = bucket(kind).get(riak_key)
-        robject.data = robject.data.merge(record)
+        store(kind, robject, robject.data.merge(record_to_db(record)))
+      end
+
+      def store(kind, robject, record_data)
+        robject.data = record_data
+        robject.indexes = record_data_to_index(record_data)
         robject.store
         record_from_db(kind, robject.key, robject.data)
+      end
+
+      def record_data_to_index(data)
+        data.reduce({}) do |new_record, (key, value)|
+          new_record[index_name(key)] = value
+          new_record
+        end
       end
 
       def delete_with_riak_key(kind, key)
@@ -77,14 +86,43 @@ module Hyperion
 
       def new_mapreduce(query)
         mr = ::Riak::MapReduce.new(@client)
-        bucket_name = bucket_name(query.kind)
-        mr.index(bucket_name, '$bucket', bucket_name)
-        mr.map(MapReduceJs.filter(query.filters))
+        add_query_filters(mr, query)
         sorts = query.sorts
         mr.reduce(MapReduceJs.sort(sorts)) unless sorts.empty?
         mr.reduce(MapReduceJs.offset(query.offset)) if query.offset
         mr.reduce(MapReduceJs.limit(query.limit)) if query.limit
         mr
+      end
+
+      def add_query_filters(mr, query)
+        bucket_name = bucket_name(query.kind)
+        all_filters = query.filters
+        first_equals_filter, filters_without_first_equal = pop_first_equals_filter(all_filters)
+        if first_equals_filter
+          field_index = index_name(first_equals_filter.field)
+          field_value = first_equals_filter.value
+          mr.index(bucket_name, field_index, field_value.to_s)
+          mr.map(MapReduceJs.filter(filters_without_first_equal))
+        else
+          mr.index(bucket_name, '$bucket', bucket_name)
+          mr.map(MapReduceJs.filter(all_filters))
+        end
+      end
+
+      def index_name(field_name)
+        "#{field_name}_bin"
+      end
+
+      def pop_first_equals_filter(filters)
+        first_equals_filter = nil
+        found = false
+        without_equal = filters.reject do |filter|
+          if !found && filter.operator == "="
+            first_equals_filter = filter
+            found = true
+          end
+        end
+        [first_equals_filter, without_equal]
       end
 
       def new_mapreduce_with_returned_result(query)
