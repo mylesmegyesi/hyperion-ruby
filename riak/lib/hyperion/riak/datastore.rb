@@ -2,6 +2,7 @@ require 'hyperion'
 require 'hyperion/key'
 require 'hyperion/riak/map_reduce_js'
 require 'riak'
+require 'hyperion/riak/optimized_filter_order'
 
 module Hyperion
   module Riak
@@ -96,33 +97,18 @@ module Hyperion
 
       def add_query_filters(mr, query)
         bucket_name = bucket_name(query.kind)
-        all_filters = query.filters
-        first_equals_filter, filters_without_first_equal = pop_first_equals_filter(all_filters)
-        if first_equals_filter
-          field_index = index_name(first_equals_filter.field)
-          field_value = first_equals_filter.value
-          mr.index(bucket_name, field_index, field_value.to_s)
-          mr.map(MapReduceJs.filter(filters_without_first_equal))
-        else
-          mr.index(bucket_name, '$bucket', bucket_name)
-          mr.map(MapReduceJs.filter(all_filters))
-        end
+        optimizer = OptimizedFilterOrder.new(query.filters, bucket_name)
+        field_index = index_name(optimizer.optimal_index_field)
+        mr.index(bucket_name, field_index, optimizer.optimal_index_value)
+        mr.map(MapReduceJs.filter(optimizer.filters))
       end
 
       def index_name(field_name)
-        "#{field_name}_bin"
-      end
-
-      def pop_first_equals_filter(filters)
-        first_equals_filter = nil
-        found = false
-        without_equal = filters.reject do |filter|
-          if !found && filter.operator == "="
-            first_equals_filter = filter
-            found = true
-          end
+        if field_name != '$bucket'
+          "#{field_name}_bin"
+        else
+          field_name
         end
-        [first_equals_filter, without_equal]
       end
 
       def new_mapreduce_with_returned_result(query)
