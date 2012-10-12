@@ -99,6 +99,12 @@ shared_examples_for 'Datastore' do
       end
     end
 
+    it "can't filter on old values" do
+      record = api.find_by_kind('testing', :filters => [[:inti, '=', 12]]).first
+      api.save(record, :inti => 2)
+      api.find_by_kind('testing', :filters => [[:inti, '=', 12]]).should == []
+    end
+
     context 'filters' do
 
       [
