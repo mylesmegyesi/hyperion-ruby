@@ -12,4 +12,4 @@ rvm:
 before_script:
   - rake prepare_ci
 
-script: rake spec
+script: rake ci_spec

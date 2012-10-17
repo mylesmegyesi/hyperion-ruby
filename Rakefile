@@ -45,12 +45,17 @@ def command(dir, command)
   sh "cd #{dir_path(dir)} && #{command}"
 end
 
-PROJECTS = [:api, :sql, :postgres, :mysql, :sqlite, :riak]
+CI_PROJECTS = [:api, :sql, :postgres, :mysql, :sqlite]
+PROJECTS = CI_PROJECTS + [:riak]
 
 PROJECTS.each do |project|
   namespace project do
     package(project.to_s)
   end
+end
+
+def create_task_for_ci(task_name, project_task)
+  task task_name => CI_PROJECTS.map {|project| "#{project}:#{project_task}"}
 end
 
 def create_task_for_all(task_name)
@@ -59,6 +64,9 @@ end
 
 desc 'Run the specs for Hyperion'
 create_task_for_all(:spec)
+
+desc 'Run the specs for Hyperion on CI'
+create_task_for_ci(:ci_spec, :spec)
 
 desc 'Install Hyperion'
 create_task_for_all(:install)
