@@ -21,10 +21,13 @@ def package(name)
     command(name, 'rake prepare_ci')
   end
 
-  desc "Run #{name} specs"
-  task :spec => :deps do
-    command(name, 'bundle exec rspec')
+  desc "Run the #{name} tests"
+  task :test do
+    command(name, 'rspec')
   end
+
+  desc "Install #{name} dependencies, run the tests, and install"
+  task :spec => [:deps, :test, :install]
 
   task :remove_version_tag do
     sh "git tag --delete v#{Hyperion::VERSION}" do |ok, res|

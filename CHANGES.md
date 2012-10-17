@@ -1,4 +1,4 @@
-# 0.0.1.alpha6
+# 0.1.0
 
 * refactors usage of thread local bindings
 * adds entities with fields, timestamps, defaults, packers, unpackers, and types
