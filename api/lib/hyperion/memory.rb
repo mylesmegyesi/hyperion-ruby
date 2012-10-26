@@ -1,10 +1,10 @@
 require 'hyperion'
+require 'hyperion/key'
 
 module Hyperion
   class Memory
 
     def initialize(opts={})
-      @id_counter = 0
       @store = {}
     end
 
@@ -46,6 +46,14 @@ module Hyperion
 
     def count(query)
       find(query).length
+    end
+
+    def pack_key(kind, key)
+      key
+    end
+
+    def unpack_key(kind, key)
+      key
     end
 
     private
@@ -95,7 +103,7 @@ module Hyperion
     end
 
     def generate_key
-      @id_counter += 1
+      Hyperion::Key.generate_id
     end
 
     def apply_offset(offset, records)

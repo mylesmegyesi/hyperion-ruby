@@ -26,6 +26,31 @@ describe Hyperion::Postgres do
     execute "DROP TABLE IF EXISTS #{table_name};"
   end
 
+  def create_foreign_key_test_tables
+    execute <<-QUERY
+    CREATE TABLE IF NOT EXISTS account (
+    id SERIAL PRIMARY KEY,
+    first_name VARCHAR(35),
+    inti INTEGER,
+    data VARCHAR(32)
+    );
+    QUERY
+    execute <<-QUERY
+    CREATE TABLE IF NOT EXISTS shirt (
+    id SERIAL PRIMARY KEY,
+    account_key INTEGER REFERENCES account,
+    first_name VARCHAR(35),
+    inti INTEGER,
+    data VARCHAR(32)
+    );
+    QUERY
+  end
+
+  def drop_foreign_key_test_tables
+    drop_table(:shirt)
+    drop_table(:account)
+  end
+
   TABLES = ['testing', 'other_testing']
 
   around :each do |example|
@@ -37,12 +62,14 @@ describe Hyperion::Postgres do
   before :each do |example|
     Hyperion::Sql.with_connection(CONNECTION_URL) do
       TABLES.each { |table| create_table(table) }
+      create_foreign_key_test_tables
     end
   end
 
   after :each do |example|
     Hyperion::Sql.with_connection(CONNECTION_URL) do
       TABLES.each { |table| drop_table(table) }
+      drop_foreign_key_test_tables
     end
   end
 

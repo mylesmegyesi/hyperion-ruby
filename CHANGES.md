@@ -1,3 +1,7 @@
+# 0.1.1
+
+* adds support of foreign keys
+
 # 0.1.0
 
 * refactors usage of thread local bindings

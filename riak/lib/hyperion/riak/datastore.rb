@@ -53,6 +53,15 @@ module Hyperion
         mr.run.first
       end
 
+      def pack_key(kind, key)
+        kind, riak_key = Hyperion::Key.decompose_key(key)
+        riak_key
+      end
+
+      def unpack_key(kind, riak_key)
+        Hyperion::Key.compose_key(kind, riak_key)
+      end
+
       private
 
       def create(record)

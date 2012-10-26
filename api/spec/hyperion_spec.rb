@@ -1,4 +1,5 @@
 require 'hyperion'
+require 'hyperion/types'
 require 'hyperion/shared_examples'
 require 'hyperion/fake_ds'
 
@@ -53,6 +54,28 @@ describe Hyperion do
 
     it 'true if a record does not exist' do
       api.new?({}).should be_true
+    end
+  end
+
+  context 'packer_defined?' do
+    it 'false if a packer has not been defined for the given type' do
+      Hyperion.packer_defined?(:undefined_packer).should == false
+    end
+
+    it 'true if a packer has been defined for the given type' do
+      Hyperion.pack(:thing) {|value| value}
+      Hyperion.packer_defined?(:thing).should == true
+    end
+  end
+
+  context 'unpacker_defined?' do
+    it 'false if a packer has not been defined for the given type' do
+      Hyperion.unpacker_defined?(:undefined_packer).should == false
+    end
+
+    it 'true if a packer has been defined for the given type' do
+      Hyperion.unpack(:thing) {|value| value}
+      Hyperion.unpacker_defined?(:thing).should == true
     end
   end
 
@@ -234,6 +257,41 @@ describe Hyperion do
         }
       end
 
+    end
+
+    Hyperion.defentity(:keyed) do |kind|
+      kind.field(:spouse_key, :type => Hyperion::Types.foreign_key(:spouse))
+    end
+
+    it 'returns the packer key' do
+      Hyperion::Types.foreign_key(:spouse).should == :spouse_key
+    end
+
+    it 'defines a packer for the given kind' do
+      Hyperion.packer_defined?(:spouse_key)
+    end
+
+    it 'defines an unpacker for the given kind' do
+      Hyperion.unpacker_defined?(:spouse_key)
+    end
+
+    it 'formats the kind' do
+      Hyperion::Types.foreign_key(:SPouse).should == :spouse_key
+    end
+
+    it 'asks the current datastore to pack the key' do
+      key = 'the key to pack'
+      Hyperion.save(:kind => :keyed, :spouse_key => key)
+      fake_ds.key_pack_queries.first[:kind].should == :spouse
+      fake_ds.key_pack_queries.first[:key].should == key
+    end
+
+    it 'asks the current datastore to unpack the key' do
+      key = 'the key to pack'
+      fake_ds.returns = [[{:kind => :keyed, :spouse_key => key}]]
+      Hyperion.save(:kind => :keyed)
+      fake_ds.key_unpack_queries.first[:kind].should == :spouse
+      fake_ds.key_unpack_queries.first[:key].should == key
     end
   end
 end

@@ -16,13 +16,19 @@ module Hyperion
   end
 
   def self.pack(type, &block)
-    @packers ||= {}
-    @packers[type] = block
+    packers[type] = block
+  end
+
+  def self.packer_defined?(type)
+    packers.has_key?(type)
   end
 
   def self.unpack(type, &block)
-    @unpackers ||= {}
-    @unpackers[type] = block
+    unpackers[type] = block
+  end
+
+  def self.unpacker_defined?(type)
+    unpackers.has_key?(type)
   end
 
   # Sets the active datastore
@@ -120,6 +126,14 @@ module Hyperion
   end
 
   private
+
+  def self.packers
+    @packers ||= {}
+  end
+
+  def self.unpackers
+    @unpackers ||= {}
+  end
 
   def self.build_query(kind, args)
     kind = Format.format_kind(kind)

@@ -23,8 +23,37 @@ describe Hyperion::Mysql do
     QUERY
   end
 
+  def create_foreign_key_test_tables
+    execute <<-QUERY
+    CREATE TABLE account (
+    id INTEGER NOT NULL AUTO_INCREMENT,
+    first_name VARCHAR(35),
+    inti INTEGER,
+    data VARCHAR(32),
+    PRIMARY KEY (id)
+    );
+    QUERY
+    execute <<-QUERY
+    CREATE TABLE shirt (
+    id INTEGER NOT NULL AUTO_INCREMENT,
+    account_key INTEGER NOT NULL,
+    first_name VARCHAR(35),
+    inti INTEGER,
+    data VARCHAR(32),
+    PRIMARY KEY (id),
+    INDEX (account_key),
+    FOREIGN KEY (account_key) REFERENCES account (id)
+    );
+    QUERY
+  end
+
   def drop_table(table_name)
     execute "DROP TABLE IF EXISTS #{table_name};"
+  end
+
+  def drop_foreign_key_test_tables
+    drop_table(:shirt)
+    drop_table(:account)
   end
 
   TABLES = ['testing', 'other_testing']
@@ -38,12 +67,14 @@ describe Hyperion::Mysql do
   before :each do |example|
     Hyperion::Sql.with_connection(CONNECTION_URL) do
       TABLES.each { |table| create_table(table) }
+      create_foreign_key_test_tables
     end
   end
 
   after :each do |example|
     Hyperion::Sql.with_connection(CONNECTION_URL) do
       TABLES.each { |table| drop_table(table) }
+      drop_foreign_key_test_tables
     end
   end
 

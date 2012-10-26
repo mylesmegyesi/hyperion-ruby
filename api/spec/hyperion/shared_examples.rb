@@ -134,7 +134,16 @@ shared_examples_for 'record packing' do |actor|
   it 'prefers the custom packer over the type packer' do
     result = actor.call(:kind => :packable, :two_packer => 'thing')
     result[:two_packer].should == 'gniht'
+
+  Hyperion.defentity(:keyed) do |kind|
+    kind.field(:widget,     :type   => Integer)
+    kind.field(:downed,     :type   => :down)
+    kind.field(:thing,      :type   => :nested_type)
+    kind.field(:bauble,     :packer => lambda {|value| value ? value.reverse : value})
+    kind.field(:bad_packer, :packer => true)
+    kind.field(:two_packer, :type   => Integer, :packer => lambda {|value| value ? value.reverse : value})
   end
+ end
 
   context 'Timestamps' do
 

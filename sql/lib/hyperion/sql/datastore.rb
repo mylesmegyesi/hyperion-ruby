@@ -65,6 +65,15 @@ module Hyperion
         end
       end
 
+      def pack_key(kind, key)
+        table, id = Key.decompose_key(key)
+        id
+      end
+
+      def unpack_key(kind, key)
+        Key.compose_key(kind, key)
+      end
+
       private
 
       attr_reader :query_builder, :query_executor, :db_strategy

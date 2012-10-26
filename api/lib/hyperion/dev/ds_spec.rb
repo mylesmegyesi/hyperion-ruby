@@ -1,3 +1,5 @@
+require 'hyperion/types'
+
 shared_examples_for 'Datastore' do
 
   def api
@@ -260,6 +262,27 @@ shared_examples_for 'Datastore' do
         end
       end
 
+    end
+  end
+
+  Hyperion.defentity(:shirt) do |kind|
+    kind.field(:account_key, :type => Hyperion::Types.foreign_key(:account))
+  end
+
+  Hyperion.defentity(:account) do |kind|
+    kind.field(:first_name)
+  end
+
+  context 'foreign_keys' do
+    it 'saves records with foreign keys' do
+      account = api.save(:kind => :account)
+      account_key = account[:key]
+      shirt  = api.save(:kind => :shirt, :account_key => account_key)
+      found_shirt = api.find_by_key(shirt[:key])
+      found_account = api.find_by_key(account_key)
+      shirt[:account_key].should == account_key
+      found_shirt[:account_key].should == account_key
+      found_account[:key].should == account_key
     end
   end
 end
