@@ -3,6 +3,7 @@ require 'hyperion/filter'
 require 'hyperion/sort'
 require 'hyperion/util'
 require 'hyperion/format'
+require 'hyperion/types'
 
 module Hyperion
 

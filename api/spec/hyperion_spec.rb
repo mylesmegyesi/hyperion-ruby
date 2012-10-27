@@ -1,5 +1,4 @@
 require 'hyperion'
-require 'hyperion/types'
 require 'hyperion/shared_examples'
 require 'hyperion/fake_ds'
 
