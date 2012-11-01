@@ -1,7 +1,10 @@
+# 0.1.3
+
+* fixes Hyperion riak gemspec to include javascript templates
+
 # 0.1.2
 
 * adds support for filtering on foreign keys
-* fixes Hyperion riak gemspec to include javascript templates
 
 # 0.1.1
 
