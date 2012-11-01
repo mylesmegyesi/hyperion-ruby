@@ -289,5 +289,9 @@ shared_examples_for 'filtering' do |actor|
   it 'passes the value to the filter' do
     actor.call([:attr, '=', 0]).value.should == 0
   end
+
+  it 'packs filter values' do
+    actor.call([:test, '=', 0]).value.should == 'i was packed'
+  end
 end
 

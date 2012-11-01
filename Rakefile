@@ -3,7 +3,7 @@ require File.expand_path('../config', __FILE__)
 def package(name)
   desc "Clean #{name}"
   task :clean do
-    command(name, 'rm -rf Gemfile.lock pkg')
+    command(name, 'rm -rf Gemfile.lock pkg .bundle')
   end
 
   desc "Gather dependencies for #{name}"
@@ -23,7 +23,7 @@ def package(name)
 
   desc "Run the #{name} tests"
   task :test do
-    command(name, 'rspec')
+    command(name, 'bundle exec rspec')
   end
 
   desc "Install #{name} dependencies, run the tests, and install"

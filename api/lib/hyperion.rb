@@ -138,15 +138,16 @@ module Hyperion
 
   def self.build_query(kind, args)
     kind = Format.format_kind(kind)
-    filters = build_filters(args[:filters])
+    filters = build_filters(kind, args[:filters])
     sorts = build_sorts(args[:sorts])
     Query.new(kind, filters, sorts, args[:limit], args[:offset])
   end
 
-  def self.build_filters(filters)
+  def self.build_filters(kind, filters)
     (filters || []).map do |(field, operator, value)|
       operator = Format.format_operator(operator)
       field = Format.format_field(field)
+      value = pack_value(kind, field, value)
       Filter.new(field, operator, value)
     end
   end
@@ -186,6 +187,14 @@ module Hyperion
       end
       update_timestamps(entity)
     end
+  end
+
+  def self.pack_value(kind, field, value)
+    kind_spec = kind_spec_for(kind)
+    return value unless kind_spec
+    field_spec = kind_spec.fields[field]
+    return value unless field_spec
+    return field_spec.pack(value)
   end
 
   def self.packer_for(type)

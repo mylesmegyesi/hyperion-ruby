@@ -284,5 +284,13 @@ shared_examples_for 'Datastore' do
       found_shirt[:account_key].should == account_key
       found_account[:key].should == account_key
     end
+
+    it 'filters on foreign keys' do
+      account = api.save(:kind => :account)
+      account_key = account[:key]
+      shirt  = api.save(:kind => :shirt, :account_key => account_key)
+      found_shirts = api.find_by_kind(:shirt, :filters => [[:account_key, '=', account_key]])
+      found_shirts[0].should == shirt
+    end
   end
 end

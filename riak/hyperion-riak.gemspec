@@ -11,6 +11,8 @@ Gem::Specification.new do |gem|
 
   Hyperion.gem_config(gem)
 
+  gem.files                 = Dir['lib/**/*.erb']
+
   gem.add_dependency('hyperion-api', Hyperion::VERSION)
   gem.add_dependency('riak-client', '1.0.5')
 end

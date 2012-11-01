@@ -8,6 +8,10 @@ describe Hyperion do
     Hyperion
   end
 
+  Hyperion.defentity(:filtering) do |kind|
+    kind.field(:test, :packer => lambda { |value| 'i was packed' })
+  end
+
   context 'datastore' do
     it 'will throw an error if the datastore is called before assignment' do
       expect{ subject.datastore }.to raise_error
@@ -150,7 +154,7 @@ describe Hyperion do
 
       context 'parses filters' do
         include_examples 'filtering', lambda { |filter|
-          Hyperion.find_by_kind('kind', :filters => [filter])
+          Hyperion.find_by_kind('filtering', :filters => [filter])
           Hyperion.datastore.queries.last.filters.first
         }
       end
@@ -216,7 +220,7 @@ describe Hyperion do
 
       context 'parses filters' do
         include_examples 'filtering', lambda { |filter|
-          Hyperion.delete_by_kind('kind', :filters => [filter])
+          Hyperion.delete_by_kind('filtering', :filters => [filter])
           Hyperion.datastore.queries.last.filters.first
         }
       end
@@ -237,7 +241,7 @@ describe Hyperion do
 
       context 'parses filters' do
         include_examples 'filtering', lambda { |filter|
-          Hyperion.count_by_kind('kind', :filters => [filter])
+          Hyperion.count_by_kind('filtering', :filters => [filter])
           Hyperion.datastore.queries.last.filters.first
         }
       end
