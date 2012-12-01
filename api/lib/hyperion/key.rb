@@ -15,11 +15,12 @@ module Hyperion
 
       def compose_key(kind, id=nil)
         _id = id.nil? || id.to_s.strip == "" ? generate_id : id.to_s
-        encode_key("#{encode_key(kind.to_s)}:#{encode_key(_id)}")
+        encode_key("#{encode_key(kind.to_s)}:#{_id}")
       end
 
       def decompose_key(key)
-        decode_key(key).split(/:/).map {|part| decode_key(part)}
+        kind, sep, id = decode_key(key).partition(/:/)
+        [decode_key(kind), id]
       end
 
       def generate_id

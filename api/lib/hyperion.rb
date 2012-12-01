@@ -139,22 +139,22 @@ module Hyperion
   def self.build_query(kind, args)
     kind = Format.format_kind(kind)
     filters = build_filters(kind, args[:filters])
-    sorts = build_sorts(args[:sorts])
+    sorts = build_sorts(kind, args[:sorts])
     Query.new(kind, filters, sorts, args[:limit], args[:offset])
   end
 
   def self.build_filters(kind, filters)
     (filters || []).map do |(field, operator, value)|
       operator = Format.format_operator(operator)
-      field = Format.format_field(field)
+      packed_field = pack_field(kind, field)
       value = pack_value(kind, field, value)
-      Filter.new(field, operator, value)
+      Filter.new(packed_field, operator, value)
     end
   end
 
-  def self.build_sorts(sorts)
+  def self.build_sorts(kind, sorts)
     (sorts || []).map do |(field, order)|
-      field = Format.format_field(field)
+      field = pack_field(kind, field)
       order = Format.format_order(order)
       Sort.new(field, order)
     end
@@ -168,8 +168,10 @@ module Hyperion
 
   def self.unpack_record(record)
     if record
-      create_entity(record) do |field_spec, value|
-        field_spec.unpack(value)
+      create_entity(record) do |record, entity, field, field_spec|
+        value = record[field_spec.db_name]
+        entity[field] = field_spec.unpack(value)
+        entity
       end
     end
   end
@@ -182,11 +184,22 @@ module Hyperion
 
   def self.pack_record(record)
     if record
-      entity = create_entity(record) do |field_spec, value|
-        field_spec.pack(value || field_spec.default)
+      entity = create_entity(record) do |record, entity, field, field_spec|
+        value = record[field]
+        entity[field_spec.db_name] = field_spec.pack(value || field_spec.default)
+        entity
       end
       update_timestamps(entity)
     end
+  end
+
+  def self.pack_field(kind, field)
+    field = Format.format_field(field)
+    kind_spec = kind_spec_for(kind)
+    return field unless kind_spec
+    field_spec = kind_spec.fields[field]
+    return field unless field_spec
+    return field_spec.db_name
   end
 
   def self.pack_value(kind, field, value)
@@ -236,8 +249,7 @@ module Hyperion
       base_record = {:kind => kind}
       base_record[:key] = key if key
       spec.fields.reduce(base_record) do |new_record, (name, spec)|
-        new_record[name] = yield(spec, record[name])
-        new_record
+        yield(record, new_record, name, spec)
       end
     end
   end
@@ -254,7 +266,7 @@ module Hyperion
 
   class FieldSpec
 
-    attr_reader :name, :default
+    attr_reader :name, :default, :db_name
 
     def initialize(name, opts={})
       @name = name
@@ -262,6 +274,7 @@ module Hyperion
       @type = opts[:type]
       @packer = opts[:packer]
       @unpacker = opts[:unpacker]
+      @db_name = opts[:db_name] ? Format.format_field(opts[:db_name]) : name
     end
 
     def pack(value)

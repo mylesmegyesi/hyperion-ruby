@@ -10,12 +10,12 @@ module Hyperion
       end
 
       def format_field(field)
-        Util.snake_case(field.to_s).to_sym
+        field.to_sym
       end
 
       def format_record(record)
         record = record.reduce({}) do |new_record, (field_name, value)|
-          new_record[Util.snake_case(field_name.to_s).to_sym] = value
+          new_record[format_field(field_name)] = value
           new_record
         end
         record[:kind] = format_kind(record[:kind])

@@ -1,3 +1,9 @@
+# 0.2.0
+
+* improves key encoding
+* removes field formatting
+* adds field aliasing
+
 # 0.1.3
 
 * fixes Hyperion riak gemspec to include javascript templates

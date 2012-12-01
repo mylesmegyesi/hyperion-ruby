@@ -10,6 +10,7 @@ describe Hyperion do
 
   Hyperion.defentity(:filtering) do |kind|
     kind.field(:test, :packer => lambda { |value| 'i was packed' })
+    kind.field(:test2, :db_name => :_test2)
   end
 
   context 'datastore' do
@@ -172,6 +173,12 @@ describe Hyperion do
             Hyperion.find_by_kind('kind', :sorts => [[field, 'desc']])
             Hyperion.datastore.queries.first.sorts.first.field
           }
+
+          it 'packs db_name aliases' do
+            api.find_by_kind('filtering', :sorts => [[:test2, 'desc']])
+            query = fake_ds.queries.last
+            query.sorts.first.field.should == :_test2
+          end
         end
 
         context 'order' do

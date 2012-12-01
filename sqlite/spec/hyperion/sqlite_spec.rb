@@ -38,11 +38,11 @@ describe Hyperion::Sqlite do
     execute <<-QUERY
     CREATE TABLE shirt (
     id INTEGER PRIMARY KEY,
-    account_key INTEGER,
+    account_id INTEGER,
     first_name VARCHAR(35),
     inti INTEGER,
     data VARCHAR(32),
-    FOREIGN KEY (account_key) REFERENCES account(id)
+    FOREIGN KEY (account_id) REFERENCES account(id)
     );
     QUERY
   end

@@ -17,12 +17,12 @@ shared_examples_for 'field formatting' do |actor|
 
   {
     'field' => :field,
-    'Field' => :field,
-    'FieldOne' => :field_one,
-    'SomeBigAttr' => :some_big_attr,
-    :SomeBigAttr => :some_big_attr,
-    'one-two-three' => :one_two_three,
-    'one two three' => :one_two_three
+    'Field' => :Field,
+    'FieldOne' => :FieldOne,
+    'SomeBigAttr' => :SomeBigAttr,
+    :SomeBigAttr => :SomeBigAttr,
+    'one-two-three' => :'one-two-three',
+    'one two three' => :'one two three'
   }.each_pair do |field, result|
 
     it "#{field.inspect} to #{result.inspect}" do
@@ -134,6 +134,7 @@ shared_examples_for 'record packing' do |actor|
   it 'prefers the custom packer over the type packer' do
     result = actor.call(:kind => :packable, :two_packer => 'thing')
     result[:two_packer].should == 'gniht'
+  end
 
   Hyperion.defentity(:keyed) do |kind|
     kind.field(:widget,     :type   => Integer)
@@ -143,7 +144,23 @@ shared_examples_for 'record packing' do |actor|
     kind.field(:bad_packer, :packer => true)
     kind.field(:two_packer, :type   => Integer, :packer => lambda {|value| value ? value.reverse : value})
   end
- end
+
+  Hyperion.defentity(:pack_field_alias) do |kind|
+    kind.field(:widget, :db_name => :field1)
+    kind.field(:widget1, :db_name => "field2")
+  end
+
+  it 'packs field aliases' do
+    result = actor.call(:kind => :pack_field_alias, :widget => 'ABC')
+    result.should_not have_key(:widget)
+    result[:field1].should == 'ABC'
+  end
+
+  it 'packs field aliases as a string' do
+    result = actor.call(:kind => :pack_field_alias, :widget1 => 'ABC')
+    result.should_not have_key(:widget1)
+    result[:field2].should == 'ABC'
+  end
 
   context 'Timestamps' do
 
@@ -248,6 +265,24 @@ shared_examples_for 'record unpacking' do |actor|
     result = actor.call(:kind => :unpackable, :two_packer => 'thing')
     result[:two_packer].should == 'gniht'
   end
+
+  Hyperion.defentity(:unpack_field_alias) do |kind|
+    kind.field(:widget, :db_name => :field1)
+    kind.field(:widget1, :db_name => "field2")
+  end
+
+  it 'unpacks field aliases' do
+    result = actor.call(:kind => :pack_field_alias, :field1 => 'ABC')
+    result.should_not have_key(:field1)
+    result[:widget].should == 'ABC'
+  end
+
+  it 'unpacks field aliases as a string' do
+    result = actor.call(:kind => :pack_field_alias, 'field2' => 'ABC')
+    result.should_not have_key(:field2)
+    result.should_not have_key('field2')
+    result[:widget1].should == 'ABC'
+  end
 end
 
 shared_examples_for 'filtering' do |actor|
@@ -256,6 +291,11 @@ shared_examples_for 'filtering' do |actor|
     include_examples 'field formatting', lambda { |field|
       actor.call([field, '=', 0]).field
     }
+
+    it 'packs db_name aliases' do
+      result = actor.call([:test2, '=', 0])
+      result.field.should == :_test2
+    end
   end
 
   context 'operator' do

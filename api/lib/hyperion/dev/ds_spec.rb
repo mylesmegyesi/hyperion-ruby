@@ -26,7 +26,7 @@ shared_examples_for 'Datastore' do
 
     it 'saves an existing record' do
       record1 = api.save({:kind => 'other_testing', :name => 'ann'})
-      record2 = api.save(record1.merge(:name => 'james'))
+      record2 = api.save({:kind => 'other_testing', :key => record1[:key]}, :name => 'james')
       record1[:key].should == record2[:key]
       api.find_by_kind('other_testing').length.should == 1
     end
@@ -266,7 +266,7 @@ shared_examples_for 'Datastore' do
   end
 
   Hyperion.defentity(:shirt) do |kind|
-    kind.field(:account_key, :type => Hyperion::Types.foreign_key(:account))
+    kind.field(:account_key, :type => Hyperion::Types.foreign_key(:account), :db_name => :account_id)
   end
 
   Hyperion.defentity(:account) do |kind|

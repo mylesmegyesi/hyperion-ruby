@@ -1,5 +1,4 @@
 * Entity feature parity with Hyperion-Clojure
-  * Key abstraction
   * Hooks
 
 * Datastores

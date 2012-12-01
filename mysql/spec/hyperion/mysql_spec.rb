@@ -36,13 +36,13 @@ describe Hyperion::Mysql do
     execute <<-QUERY
     CREATE TABLE shirt (
     id INTEGER NOT NULL AUTO_INCREMENT,
-    account_key INTEGER NOT NULL,
+    account_id INTEGER NOT NULL,
     first_name VARCHAR(35),
     inti INTEGER,
     data VARCHAR(32),
     PRIMARY KEY (id),
-    INDEX (account_key),
-    FOREIGN KEY (account_key) REFERENCES account (id)
+    INDEX (account_id),
+    FOREIGN KEY (account_id) REFERENCES account (id)
     );
     QUERY
   end
@@ -115,7 +115,7 @@ describe Hyperion::Mysql do
       rescue Exception => e
         error_message = e.message
       end
-      error_message.should include("Unknown column 'my_evil_name`___' in 'field list'")
+      error_message.should include("Unknown column 'my evil name` --' in 'field list'")
     end
   end
 end
