@@ -49,7 +49,7 @@ def command(dir, command)
 end
 
 CI_PROJECTS = [:api, :sql, :postgres, :mysql, :sqlite]
-PROJECTS = CI_PROJECTS + [:riak]
+PROJECTS = CI_PROJECTS + [:riak, :redis]
 
 PROJECTS.each do |project|
   namespace project do
