@@ -283,6 +283,60 @@ end
 Hyperion.save(kind: :typed_2, age: '25')
 #=> {:kind=>"typed_2", :key=><generated_key>, :age=>2}
 ```
+
+#### Foreign Keys
+
+In a traditional SQL database, you may have a schema that looks like this:
+
+users:
+  * id
+  * first_name
+  * created_at
+  * updated_at
+
+profiles:
+  * id
+  * user_id
+  * created_at
+  * updated_at
+
+Since Hyperion presents every underlying datastore as a key-value store, configuring Hyperion to use this schema is a little tricky, but certainly possible.
+
+This is what the coresponding `defentity` notation would be:
+
+``` ruby
+Hyperion.defentity(:users) do |kind|
+  kind.field(:first_name)
+  kind.field(:created_at)
+  kind.field(:updated_at)
+end
+
+Hyperion.defentity(:users) do |kind|
+  kind.field(:user_key, :type => Hyperion::Types.foreign_key(:users), :db_name => :user_id)
+  kind.field(:created_at)
+  kind.field(:updated_at)
+end
+
+myles = Hyperion.save(kind: :users, :first_name => "Myles")
+#=> {:kind=>"users", :key=>"46e5ebef8554422db90f7eb4d01be4c6", :email=>nil, :first_name=>"Myles", :last_name=>nil, :created_at=>2012-12-02 17:30:41 -0600, :updated_at=>nil}
+
+# myles is stored in the users table as:
+# | id | first_name | created_at | updated_at |
+# | 1  | Myles      | <time>     | <time>     |
+
+
+myles_profile = Hyperion.save(:kind => :profiles, :user_key => myles[:key])
+#=> {:kind=>"profiles", :user_key=>"46e5ebef8554422db90f7eb4d01be4c6", :key=>"356c89696b0d40f6a5754f225c01f7a9"}
+
+# myles' profile is stored in the profiles table as:
+# | id | user_id | created_at | updated_at |
+# | 1  | 1       | <time>     | <time>     |
+```
+
+Using the `Hyperion::Types.foreign_key` helper, our foreign key references are stored in whatever way is conventional to the underlying datastore. In this example, the `user_key` field will be packed as an integer id, as stored in the `user_id` column.
+
+If your schema requires foreign keys, **ALWAYS USE THE FOREIGN KEY TYPE**. If you do not, you will be storing generated keys instead of actual database ids. **DO NOT DO THIS**. If Hyperion changes the way it generates keys, all of your foreign key data will be useless.
+
 ## Contributing
 
 Clone the master branch, and run all the tests:
