@@ -1,5 +1,6 @@
 require 'hyperion'
 require 'hyperion/key'
+require 'hyperion/memory/helper'
 
 module Hyperion
   class Memory
@@ -24,10 +25,10 @@ module Hyperion
     def find(query)
       records = store.values
       records = filter_kind(query.kind,      records)
-      records = apply_filters(query.filters, records)
-      records = apply_sorts(query.sorts,     records)
-      records = apply_offset(query.offset,   records)
-      records = apply_limit(query.limit,     records)
+      records = Helper.apply_filters(query.filters, records)
+      records = Helper.apply_sorts(query.sorts,     records)
+      records = Helper.apply_offset(query.offset,   records)
+      records = Helper.apply_limit(query.limit,     records)
       records
     end
 
@@ -66,54 +67,8 @@ module Hyperion
       end
     end
 
-    def apply_filters(filters, records)
-      records.select do |record|
-        filters.all? do |filter|
-          value = record[filter.field]
-          case filter.operator
-          when '<'; value && value < filter.value
-          when '<='; value && value <= filter.value
-          when '>'; value && value > filter.value
-          when '>='; value && value >= filter.value
-          when '='; value == filter.value
-          when '!='; value != filter.value
-          when 'contains?'; filter.value.include?(value)
-          end
-        end
-      end
-    end
-
-    def apply_sorts(sorts, records)
-      records.sort { |record1, record2| compare_records record1, record2, sorts }
-    end
-
-    def compare_records(record1, record2, sorts)
-      sorts.each do |sort|
-        result = compare_record record1, record2, sort
-        return result if result
-      end
-      0
-    end
-
-    def compare_record(record1, record2, sort)
-      field1, field2 = record1[sort.field], record2[sort.field]
-      field1 == field2                      ?  nil :
-        field1 < field2 && sort.ascending?  ?  -1  :
-        field1 > field2 && sort.descending? ?  -1  : 1
-    end
-
     def generate_key
       Hyperion::Key.generate_id
-    end
-
-    def apply_offset(offset, records)
-      return records unless offset
-      records.drop offset
-    end
-
-    def apply_limit(limit, records)
-      return records unless limit
-      records.take(limit)
     end
   end
 end
