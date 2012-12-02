@@ -12,5 +12,5 @@ Gem::Specification.new do |gem|
   Hyperion.gem_config(gem)
 
   gem.add_dependency('hyperion-sql', Hyperion::VERSION)
-  gem.add_dependency('do_sqlite3', '0.10.8')
+  gem.add_dependency('do_sqlite3', '0.10.10')
 end
