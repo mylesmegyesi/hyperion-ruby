@@ -2,6 +2,7 @@ require 'hyperion'
 require 'hyperion/key'
 require 'hyperion/memory/helper'
 require 'redis'
+require 'json'
 
 module Hyperion
   module Redis
@@ -17,12 +18,14 @@ module Hyperion
       end
 
       def find_by_key(key)
-        deserialize(@client.get(key))
+        record = @client.hgetall(key)
+        metarecord = @client.hgetall(meta_key(key))
+        cast_record(record, metarecord)
       end
 
       def find(query)
-        records = find_by_kind(query.kind)
-        records = records.map { |record| deserialize(record) }
+        raw_records = find_by_kind(query.kind)
+        records = raw_records.map { |(record, metarecord)| cast_record(record, metarecord) }
         records = Hyperion::Memory::Helper.apply_filters(query.filters, records)
         records = Hyperion::Memory::Helper.apply_sorts(query.sorts, records)
         records = Hyperion::Memory::Helper.apply_offset(query.offset, records)
@@ -31,7 +34,10 @@ module Hyperion
       end
 
       def delete_by_key(key)
-        @client.del(key)
+        @client.multi do
+          @client.del(key)
+          @client.del(meta_key(key))
+        end
         nil
       end
 
@@ -69,22 +75,87 @@ module Hyperion
 
       def persist_record(record)
         key = record[:key]
-        @client.set(key, serialize(record))
+        json_record = record.reduce({}) do |acc, (key, val)|
+          if val.class == Hash || val.class == Array
+            acc[key] = JSON.dump(val)
+          else
+            acc[key] = val
+          end
+          acc
+        end
+        @client.multi do
+          @client.hmset(key, *json_record.to_a.flatten)
+          @client.hmset(meta_key(key), *meta_record(record).to_a.flatten)
+        end
       end
 
       def find_by_kind(kind)
         keys = @client.keys "#{kind}:*"
         @client.multi do
-          keys.each { |key| @client.get key }
+          keys.each do |key|
+            @client.hgetall(key)
+            @client.hgetall(meta_key(key))
+          end
+        end.each_slice(2).to_a
+      end
+
+      def meta_record(record)
+        record.reduce({}) do |acc, (key, val)|
+          acc[key] = to_db_type(val)
+          acc
         end
       end
 
-      def serialize(record)
-        Marshal.dump(record)
+      def meta_key(key)
+        "__metadata__" + key
       end
 
-      def deserialize(raw_record)
-        Marshal.load(raw_record)
+      def cast_record(record, metarecord)
+        record.reduce({}) do |acc, (key, value)|
+          type = metarecord[key]
+          acc[key.to_sym] = from_db_type(value, type)
+          acc
+        end
+      end
+
+      def to_db_type(value)
+        if value.class.to_s == "String"
+          "String"
+        elsif value.class.to_s == "Fixnum"
+          "Integer"
+        elsif value.class.to_s == "Float"
+          "Number"
+        elsif value.class.to_s == "TrueClass" || value.class.to_s == "FalseClass"
+          "Boolean"
+        elsif value.class.to_s == "NilClass"
+          "Null"
+        elsif value.class.to_s == "Array"
+          "Array"
+        elsif value.class.to_s == "Hash"
+          "Object"
+        else
+          "Any"
+        end
+      end
+
+      def from_db_type(value, type)
+        if type == "String"
+          value
+        elsif type == "Integer"
+          value.to_i
+        elsif type == "Number"
+          value.to_f
+        elsif type == "Boolean"
+          value == 'true' ? true : false
+        elsif type == "Null"
+          nil
+        elsif type == "Array"
+          JSON.load(value)
+        elsif type == "Object"
+          JSON.load(value)
+        elsif type == "Any"
+          value
+        end
       end
     end
   end
