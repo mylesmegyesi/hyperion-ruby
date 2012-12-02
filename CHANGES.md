@@ -3,6 +3,7 @@
 * improves key encoding
 * removes field formatting
 * adds field aliasing
+* fixes filtering on nil
 
 # 0.1.3
 

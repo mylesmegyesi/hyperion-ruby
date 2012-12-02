@@ -40,7 +40,14 @@ describe Hyperion::Riak::OptimizedFilterOrder do
       o.optimal_index_field.should == :int
     end
 
-    it 'returns bucket name for optimal_index_value' do
+    it 'does not optimize when value is nil' do
+      filters = [filter(:int, '=', nil)]
+      o = described_class.new(filters, '')
+      o.optimal_index_field.should == '$bucket'
+      o.filters.should == filters
+    end
+
+    it 'returns optimal_index_value' do
       filters = [filter(:int, '=', 1)]
       bucket_name = "hamburgers"
 

@@ -1,29 +1,50 @@
 function(riak_record) {
-  var data = Riak.mapValuesJson(riak_record)[0];
+  var value, fieldValue, data, isNull;
+
+  isNull = function(value) {
+    return (typeof value === "undefined" || value === null);
+  }
+
+  any = function(value, coll) {
+    for (var i = 0; i < coll.length; i++) {
+      if (value === coll[i]) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  data = Riak.mapValuesJson(riak_record)[0];
   <% filters.each do |filter| %>
-    var value = <%= filter.value.to_json %>
-    var fieldValue = data[<%= filter.field.to_json %>];
+    value = <%= filter.value.to_json %>
+    fieldValue = data[<%= filter.field.to_json %>];
     <% operator = filter.operator %>
-    <% if operator == "contains?" %>
-      var found = false;
-      <% filter.value.each do |item| %>
-        if (fieldValue == <%= item.to_json %>) {
-          found = true;
+    <% if operator == 'contains?' %>
+       if (!any(fieldValue, <%= filter.value.to_json %>)) {
+        return [];
+      }
+    <% elsif operator == '=' %>
+      <% if filter.value.nil? %>
+        if (!isNull(fieldValue)) {
+          return [];
+        }
+      <% else %>
+        if (fieldValue !== value) {
+          return [];
         }
       <% end %>
-      if (!found) {
-        return [];
-      }
-    <% elsif operator == "=" %>
-      if (fieldValue !== value) {
-        return [];
-      }
-    <% elsif operator == "!=" %>
-      if (fieldValue == value) {
-        return [];
-      }
+    <% elsif operator == '!=' %>
+      <% if filter.value.nil? %>
+        if (isNull(fieldValue)) {
+          return [];
+        }
+      <% else %>
+        if (fieldValue === value) {
+          return [];
+        }
+      <% end %>
     <% else %>
-      if (!(fieldValue <%= operator %> value)) {
+      if (isNull(fieldValue) || !(fieldValue <%= operator %> value)) {
         return [];
       }
     <% end %>

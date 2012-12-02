@@ -36,7 +36,7 @@ describe Hyperion::Mysql do
     execute <<-QUERY
     CREATE TABLE shirt (
     id INTEGER NOT NULL AUTO_INCREMENT,
-    account_id INTEGER NOT NULL,
+    account_id INTEGER,
     first_name VARCHAR(35),
     inti INTEGER,
     data VARCHAR(32),

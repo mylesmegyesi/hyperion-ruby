@@ -2,7 +2,7 @@ def test_app_name
   '_HTEST_'
 end
 
-BUCKETS = ['testing', 'other_testing']
+BUCKETS = ['testing', 'other_testing', 'account', 'shirt']
 
 def empty_buckets(ds)
   client = ds.instance_variable_get(:@client)

@@ -81,17 +81,6 @@ shared_examples_for 'Datastore' do
   end
 
   context 'find by kind' do
-    before :each do
-      api.save_many([
-        {:kind => 'testing', :inti => 1,  :data => 'one'    },
-        {:kind => 'testing', :inti => 12, :data => 'twelve' },
-        {:kind => 'testing', :inti => 23, :data => 'twenty3'},
-        {:kind => 'testing', :inti => 34, :data => 'thirty4'},
-        {:kind => 'testing', :inti => 45, :data => 'forty5' },
-        {:kind => 'testing', :inti => 1,  :data => 'the one'},
-        {:kind => 'testing', :inti => 44, :data => 'forty4' }
-      ])
-    end
 
     it 'filters by the kind' do
       api.save({:kind => 'other_testing', :inti => 5})
@@ -102,19 +91,33 @@ shared_examples_for 'Datastore' do
     end
 
     it "can't filter on old values" do
-      record = api.find_by_kind('testing', :filters => [[:inti, '=', 12]]).first
+      record = api.save(:kind => 'testing', :inti => 12)
       api.save(record, :inti => 2)
       api.find_by_kind('testing', :filters => [[:inti, '=', 12]]).should == []
     end
 
     context 'filters' do
+      before :each do
+        api.save_many([
+          {:kind => 'testing', :inti => 1,   :data => 'one'    },
+          {:kind => 'testing', :inti => 12,  :data => 'twelve' },
+          {:kind => 'testing', :inti => 23,  :data => 'twenty3'},
+          {:kind => 'testing', :inti => 34,  :data => 'thirty4'},
+          {:kind => 'testing', :inti => 45,  :data => 'forty5' },
+          {:kind => 'testing', :inti => 1,   :data => 'the one'},
+          {:kind => 'testing', :inti => 44,  :data => 'forty4' },
+          {:kind => 'testing', :inti => nil, :data => 'forty4' }
+        ])
+      end
 
       [
         [[[:inti, '<', 25]], [1, 12, 23], :inti],
         [[[:inti, '<=', 25]], [1, 12, 23], :inti],
         [[[:inti, '>', 25]], [34, 44, 45], :inti],
         [[[:inti, '=', 34]], [34], :inti],
-        [[[:inti, '!=', 34]], [1, 12, 23, 44, 45], :inti],
+        [[[:inti, '=', nil]], [nil], :inti],
+        [[[:inti, '!=', nil]], [1, 1, 12, 23, 34, 44, 45], :inti],
+        [[[:inti, '!=', 34]], [1, 12, 23, 44, 45, nil], :inti],
         [[[:inti, 'in', [12, 34]]], [12, 34], :inti],
         [[[:inti, '>', 10], [:inti, '<', 25]], [12, 23], :inti],
         [[[:inti, '<', 25], [:inti, '>', 10]], [12, 23], :inti],
@@ -123,7 +126,7 @@ shared_examples_for 'Datastore' do
         [[[:inti, '>', 10], [:inti, '<', 25], [:inti, '=', 23]], [23], :inti],
         [[[:inti, '=', 23], [:inti, '>', 10], [:inti, '<', 25]], [23], :inti],
         [[[:inti, '<', 24], [:inti, '>', 25]], [], :inti],
-        [[[:inti, '!=', 12], [:inti, '!=', 23], [:inti, '!=', 34]], [1, 44, 45], :inti],
+        [[[:inti, '!=', 12], [:inti, '!=', 23], [:inti, '!=', 34]], [1, 44, 45, nil], :inti],
         [[[:data, '<', 'qux']], ['one', 'forty4', 'forty5'], :data],
         [[[:data, '<=', 'one']], ['one', 'forty4', 'forty5'], :data],
         [[[:data, '>=', 'thirty4']], ['twelve', 'twenty3', 'thirty4'], :data],
@@ -144,6 +147,17 @@ shared_examples_for 'Datastore' do
     end
 
     context 'sorts' do
+      before :each do
+        api.save_many([
+          {:kind => 'testing', :inti => 1,   :data => 'one'    },
+          {:kind => 'testing', :inti => 12,  :data => 'twelve' },
+          {:kind => 'testing', :inti => 23,  :data => 'twenty3'},
+          {:kind => 'testing', :inti => 34,  :data => 'thirty4'},
+          {:kind => 'testing', :inti => 45,  :data => 'forty5' },
+          {:kind => 'testing', :inti => 1,   :data => 'the one'},
+          {:kind => 'testing', :inti => 44,  :data => 'forty4' },
+        ])
+      end
 
       [
         [[[:inti, :asc]], [1, 1, 12, 23, 34, 44, 45], :inti],
@@ -163,6 +177,18 @@ shared_examples_for 'Datastore' do
     end
 
     context 'limit and offset' do
+      before :each do
+        api.save_many([
+          {:kind => 'testing', :inti => 1,   :data => 'one'    },
+          {:kind => 'testing', :inti => 12,  :data => 'twelve' },
+          {:kind => 'testing', :inti => 23,  :data => 'twenty3'},
+          {:kind => 'testing', :inti => 34,  :data => 'thirty4'},
+          {:kind => 'testing', :inti => 45,  :data => 'forty5' },
+          {:kind => 'testing', :inti => 1,   :data => 'the one'},
+          {:kind => 'testing', :inti => 44,  :data => 'forty4' },
+        ])
+      end
+
       specify 'offset n returns results starting at the nth record' do
         found_records = api.find_by_kind('testing', :sorts => [[:inti, :asc]], :offset => 2)
         ints = found_records.map {|record| record[:inti]}
@@ -196,8 +222,9 @@ shared_examples_for 'Datastore' do
 
     before :each do
       api.save_many([
-        {:kind => 'testing', :inti => 1,  :data => 'one'    },
-        {:kind => 'testing', :inti => 12, :data => 'twelve' }
+        {:kind => 'testing', :inti => 1,   :data => 'one'    },
+        {:kind => 'testing', :inti => 12,  :data => 'twelve' },
+        {:kind => 'testing', :inti => nil, :data => 'twelve' }
       ])
     end
 
@@ -212,16 +239,19 @@ shared_examples_for 'Datastore' do
 
       [
         [[], []],
-        [[[:inti, '=', 1]], [12]],
-        [[[:data, '=', 'one']], [12]],
+        [[[:inti, '=', 1]], [12, nil]],
+        [[[:data, '=', 'one']], [12, nil]],
         [[[:inti, '!=', 1]], [1]],
-        [[[:inti, '<=', 1]], [12]],
-        [[[:inti, '<=', 2]], [12]],
-        [[[:inti, '>=', 2]], [1]],
-        [[[:inti, '>', 1]], [1]],
-        [[[:inti, 'in', [1]]], [12]],
-        [[[:inti, 'in', [1, 12]]], []],
-        [[[:inti, '=', 2]], [1, 12]]
+        [[[:inti, '<=', 1]], [12, nil]],
+        [[[:inti, '<=', 2]], [12, nil]],
+        [[[:inti, '>=', 2]], [1, nil]],
+        [[[:inti, '>', 1]], [1, nil]],
+        [[[:inti, 'in', [1]]], [12, nil]],
+        [[[:inti, 'in', [1, nil]]], [12]],
+        [[[:inti, 'in', [1, 12]]], [nil]],
+        [[[:inti, '=', 2]], [1, 12, nil]],
+        [[[:inti, '=', nil]], [1, 12]],
+        [[[:inti, '!=', nil]], [nil]],
       ].each do |filters, result|
         it filters.inspect do
           api.delete_by_kind('testing', :filters => filters)
@@ -237,25 +267,28 @@ shared_examples_for 'Datastore' do
 
     before :each do
       api.save_many([
-        {:kind => 'testing', :inti => 1,  :data => 'one'    },
-        {:kind => 'testing', :inti => 12, :data => 'twelve' }
+        {:kind => 'testing', :inti => 1,   :data => 'one'    },
+        {:kind => 'testing', :inti => 12,  :data => 'twelve' },
+        {:kind => 'testing', :inti => nil, :data => 'twelve' }
       ])
     end
 
     context 'filters' do
 
       [
-        [[], 2],
+        [[], 3],
         [[[:inti, '=', 1]], 1],
         [[[:data, '=', 'one']], 1],
-        [[[:inti, '!=', 1]], 1],
+        [[[:inti, '!=', 1]], 2],
         [[[:inti, '<=', 1]], 1],
         [[[:inti, '<=', 2]], 1],
         [[[:inti, '>=', 2]], 1],
         [[[:inti, '>', 1]], 1],
         [[[:inti, 'in', [1]]], 1],
         [[[:inti, 'in', [1, 12]]], 2],
-        [[[:inti, '=', 2]], 0]
+        [[[:inti, '=', 2]], 0],
+        [[[:inti, '=', nil]], 1],
+        [[[:inti, '!=', nil]], 2],
       ].each do |filters, result|
         it filters.inspect do
           api.count_by_kind('testing', :filters => filters).should == result
@@ -291,6 +324,20 @@ shared_examples_for 'Datastore' do
       shirt  = api.save(:kind => :shirt, :account_key => account_key)
       found_shirts = api.find_by_kind(:shirt, :filters => [[:account_key, '=', account_key]])
       found_shirts[0].should == shirt
+    end
+
+    it 'unpacks nil foreign keys' do
+      shirt  = api.save(:kind => :shirt, :account_key => nil)
+      shirt[:account_key].should be_nil
+      found_shirt = api.find_by_kind(:shirt, :filters => [[:account_key, '=', nil]]).first
+      found_shirt[:account_key].should be_nil
+    end
+
+    it 'filters on nil foreign key' do
+      account = api.save(:kind => :account)
+      shirt  = api.save(:kind => :shirt, :account_key => account[:key])
+      nil_shirt  = api.save(:kind => :shirt, :account_key => nil)
+      api.find_by_kind(:shirt, :filters => [[:account_key, '=', nil]]).should == [nil_shirt]
     end
   end
 end

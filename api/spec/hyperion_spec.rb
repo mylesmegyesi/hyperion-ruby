@@ -266,42 +266,50 @@ describe Hyperion do
           Hyperion.find_by_key('key')
         }
       end
-
     end
 
-    Hyperion.defentity(:keyed) do |kind|
-      kind.field(:spouse_key, :type => Hyperion::Types.foreign_key(:spouse))
-    end
+    context 'foreign key type' do
 
-    it 'returns the packer key' do
-      Hyperion::Types.foreign_key(:spouse).should == :spouse_key
-    end
+      Hyperion.defentity(:keyed) do |kind|
+        kind.field(:spouse_key, :type => Hyperion::Types.foreign_key(:spouse))
+      end
 
-    it 'defines a packer for the given kind' do
-      Hyperion.packer_defined?(:spouse_key)
-    end
+      it 'returns the packer key' do
+        Hyperion::Types.foreign_key(:spouse).should == :spouse_key
+      end
 
-    it 'defines an unpacker for the given kind' do
-      Hyperion.unpacker_defined?(:spouse_key)
-    end
+      it 'defines a packer for the given kind' do
+        Hyperion.packer_defined?(:spouse_key)
+      end
 
-    it 'formats the kind' do
-      Hyperion::Types.foreign_key(:SPouse).should == :spouse_key
-    end
+      it 'defines an unpacker for the given kind' do
+        Hyperion.unpacker_defined?(:spouse_key)
+      end
 
-    it 'asks the current datastore to pack the key' do
-      key = 'the key to pack'
-      Hyperion.save(:kind => :keyed, :spouse_key => key)
-      fake_ds.key_pack_queries.first[:kind].should == :spouse
-      fake_ds.key_pack_queries.first[:key].should == key
-    end
+      it 'formats the kind' do
+        Hyperion::Types.foreign_key(:SPouse).should == :spouse_key
+      end
 
-    it 'asks the current datastore to unpack the key' do
-      key = 'the key to pack'
-      fake_ds.returns = [[{:kind => :keyed, :spouse_key => key}]]
-      Hyperion.save(:kind => :keyed)
-      fake_ds.key_unpack_queries.first[:kind].should == :spouse
-      fake_ds.key_unpack_queries.first[:key].should == key
+      it 'asks the current datastore to pack the key' do
+        key = 'the key to pack'
+        Hyperion.save(:kind => :keyed, :spouse_key => key)
+        fake_ds.key_pack_queries.first[:kind].should == :spouse
+        fake_ds.key_pack_queries.first[:key].should == key
+      end
+
+      it 'handles packing nil' do
+        Hyperion.save(:kind => :keyed, :spouse_key => nil)
+        fake_ds.key_pack_queries.first[:key].should == nil
+      end
+
+      it 'asks the current datastore to unpack the key' do
+        key = 'the key to pack'
+        fake_ds.returns = [[{:kind => :keyed, :spouse_key => key}]]
+        Hyperion.save(:kind => :keyed)
+        fake_ds.key_unpack_queries.first[:kind].should == :spouse
+        fake_ds.key_unpack_queries.first[:key].should == key
+      end
+
     end
   end
 end

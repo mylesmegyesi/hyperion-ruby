@@ -136,15 +136,6 @@ shared_examples_for 'record packing' do |actor|
     result[:two_packer].should == 'gniht'
   end
 
-  Hyperion.defentity(:keyed) do |kind|
-    kind.field(:widget,     :type   => Integer)
-    kind.field(:downed,     :type   => :down)
-    kind.field(:thing,      :type   => :nested_type)
-    kind.field(:bauble,     :packer => lambda {|value| value ? value.reverse : value})
-    kind.field(:bad_packer, :packer => true)
-    kind.field(:two_packer, :type   => Integer, :packer => lambda {|value| value ? value.reverse : value})
-  end
-
   Hyperion.defentity(:pack_field_alias) do |kind|
     kind.field(:widget, :db_name => :field1)
     kind.field(:widget1, :db_name => "field2")

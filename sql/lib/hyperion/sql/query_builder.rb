@@ -80,21 +80,33 @@ module Hyperion
           filter_sql = []
           filter_values = []
           filters.each do |filter|
-            filter_sql << "#{format_column(filter.field)} #{format_operator(filter.operator)} ?"
-            filter_values << filter.value
+            apply_filter(filter, filter_sql, filter_values)
           end
           sql_query.append("WHERE #{filter_sql.join(' AND ')}", filter_values)
         end
       end
 
-      def format_operator(operator)
-        case operator
-        when 'contains?'
-          "IN"
-        when '!='
-          "<>"
+      def apply_filter(filter, filter_sql, filter_values)
+        column = format_column(filter.field)
+        if filter.operator == '!='
+          if filter.value.nil?
+            filter_sql << "#{column} IS NOT NULL"
+          else
+            filter_sql << "(#{column} != ? OR #{column} IS NULL)"
+            filter_values << filter.value
+          end
+        elsif filter.operator == 'contains?'
+          if filter.value.include?(nil)
+            filter_sql << "(#{column} IN ? OR #{column} IS NULL)"
+          else
+            filter_sql << "#{column} IN ?"
+          end
+          filter_values << filter.value
+        elsif filter.operator == '=' && filter.value.nil?
+          filter_sql << "#{column} IS NULL"
         else
-          operator
+          filter_sql << "#{column} #{filter.operator} ?"
+          filter_values << filter.value
         end
       end
 

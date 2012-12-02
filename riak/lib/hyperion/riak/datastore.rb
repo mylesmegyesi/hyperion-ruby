@@ -54,12 +54,16 @@ module Hyperion
       end
 
       def pack_key(kind, key)
-        kind, riak_key = Hyperion::Key.decompose_key(key)
-        riak_key
+        if key
+          kind, riak_key = Hyperion::Key.decompose_key(key)
+          riak_key
+        end
       end
 
       def unpack_key(kind, riak_key)
-        Hyperion::Key.compose_key(kind, riak_key)
+        if riak_key
+          Hyperion::Key.compose_key(kind, riak_key)
+        end
       end
 
       private

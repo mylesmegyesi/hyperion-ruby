@@ -71,10 +71,10 @@ module Hyperion
         filters.all? do |filter|
           value = record[filter.field]
           case filter.operator
-          when '<'; value < filter.value
-          when '<='; value <= filter.value
-          when '>'; value > filter.value
-          when '>='; value >= filter.value
+          when '<'; value && value < filter.value
+          when '<='; value && value <= filter.value
+          when '>'; value && value > filter.value
+          when '>='; value && value >= filter.value
           when '='; value == filter.value
           when '!='; value != filter.value
           when 'contains?'; filter.value.include?(value)

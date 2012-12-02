@@ -1,5 +1,5 @@
 module Hyperion
-  VERSION = '0.1.3'
+  VERSION = '0.2.0'
 
   def self.gem_config(gem)
     gem.version               = VERSION

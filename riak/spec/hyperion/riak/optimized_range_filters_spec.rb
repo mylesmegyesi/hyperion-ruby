@@ -5,6 +5,7 @@ describe Hyperion::Riak::OptimizedRangeFilters do
   let(:test_less_than_filter) { filter(:test, '<', 1) }
   let(:test_greater_than_filter) { filter(:test, '>', 1) }
   let(:test_equals_filter) { filter(:test, '=', 1) }
+  let(:nil_test_equals_filter) { filter(:test, '=', nil) }
   let(:other_test_less_than_filter) { filter(:other_test, '<', 1) }
   let(:other_test_greater_than_filter) { filter(:other_test, '>', 1) }
 

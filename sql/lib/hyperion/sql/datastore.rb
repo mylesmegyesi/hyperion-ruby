@@ -66,12 +66,16 @@ module Hyperion
       end
 
       def pack_key(kind, key)
-        table, id = Key.decompose_key(key)
-        id
+        if key
+          table, id = Key.decompose_key(key)
+          id
+        end
       end
 
       def unpack_key(kind, key)
-        Key.compose_key(kind, key)
+        if key
+          Key.compose_key(kind, key)
+        end
       end
 
       private

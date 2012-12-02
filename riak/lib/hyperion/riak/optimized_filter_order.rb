@@ -38,7 +38,7 @@ module Hyperion
       end
 
       def can_optimize?
-        !first_equals_filter.nil?
+        !first_equals_filter.nil? && !first_equals_filter.value.nil?
       end
 
       def optimal_index_field
