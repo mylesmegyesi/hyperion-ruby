@@ -3,6 +3,7 @@
 require File.expand_path('../../config', __FILE__)
 
 Gem::Specification.new do |gem|
+  gem.version               = '0.2.0'
   gem.name                  = 'hyperion-riak'
   gem.description           = %q{Riak datastore for Hyperion}
   gem.summary               = %q{Riak datastore for Hypeiron}
@@ -13,7 +14,7 @@ Gem::Specification.new do |gem|
 
   gem.files                 += Dir['lib/**/*.erb']
 
-  gem.add_dependency('hyperion-api', Hyperion::VERSION)
+  gem.add_dependency('hyperion-api', '0.2.0')
   gem.add_dependency('riak-client', '1.1.0')
 end
 

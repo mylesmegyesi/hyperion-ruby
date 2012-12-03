@@ -2,7 +2,6 @@ module Hyperion
   VERSION = '0.2.0'
 
   def self.gem_config(gem)
-    gem.version               = VERSION
     gem.license               = 'Eclipse Public License'
     gem.homepage              = 'https://github.com/mylesmegyesi/hyperion-ruby'
     gem.required_ruby_version = '>=1.8.7'
