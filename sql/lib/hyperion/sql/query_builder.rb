@@ -1,5 +1,6 @@
 require 'hyperion/key'
 require 'hyperion/sql/sql_query'
+require 'hyperion/util'
 
 module Hyperion
   module Sql
@@ -62,11 +63,11 @@ module Hyperion
       end
 
       def format_column(column)
-        quote(column)
+        Util.snake_case(quote(column))
       end
 
       def format_table(table)
-        quote(table)
+        Util.snake_case(quote(table))
       end
 
       def format_array(arr)

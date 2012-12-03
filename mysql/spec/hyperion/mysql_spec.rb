@@ -115,7 +115,7 @@ describe Hyperion::Mysql do
       rescue Exception => e
         error_message = e.message
       end
-      error_message.should include("Unknown column 'my evil name` --' in 'field list'")
+      error_message.should include("Unknown column 'my_evil_name`___' in 'field list'")
     end
   end
 end
