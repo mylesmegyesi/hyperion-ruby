@@ -311,7 +311,7 @@ Hyperion.defentity(:users) do |kind|
   kind.field(:updated_at)
 end
 
-Hyperion.defentity(:users) do |kind|
+Hyperion.defentity(:profiles) do |kind|
   kind.field(:user_key, :type => Hyperion::Types.foreign_key(:users), :db_name => :user_id)
   kind.field(:created_at)
   kind.field(:updated_at)
