@@ -30,7 +30,24 @@ Hyperion.new_datastore(:redis, options)
 
 `:db` A specific Database to use on the Redis server: default is `0`.
 
-### Note
+### Data Types
+
+Hyperion::Redis will transparently pack and unpack certain Ruby types.
+
+Ruby data types that are handled include:
+  * String
+  * Fixnum
+  * Float
+  * TrueClass
+  * FalseClass
+  * NilClass
+  * Array
+  * Hash
+
+Keys of the Hash will be returned as symbols, however all data types that are not in the above list have .to_s invoked on them (including symbols) and that will be how they are returned from Hyperion::Redis. 
+
+
+### Performance
 
 Currently, all filtering, sorts, offsets, and limits happen within ruby and can become slow as a `kind` adds more and more records. Saving, lookup by id, and deletion by id are all still completed within Redis.
 
@@ -40,7 +57,7 @@ Clone the master branch, build, and run all the tests:
 
 ``` bash
 git clone git@github.com:mylesmegyesi/hyperion-ruby.git
-cd hyperion-ruby/riak
+cd hyperion-ruby/redis
 bundle install
 bundle exec rspec
 ```
