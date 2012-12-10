@@ -48,8 +48,8 @@ def command(dir, command)
   sh "cd #{dir_path(dir)} && #{command}"
 end
 
-CI_PROJECTS = [:api, :sql, :postgres, :mysql, :sqlite, :redis]
-PROJECTS = CI_PROJECTS + [:riak]
+CI_PROJECTS = [:api, :sql, :postgres, :mysql, :sqlite, :redis, :riak]
+PROJECTS = CI_PROJECTS
 
 PROJECTS.each do |project|
   namespace project do
