@@ -4,3 +4,4 @@ task :prepare_ci do
   sh 'sudo service redis-server start' do |ok, res|
   end
 end
+
