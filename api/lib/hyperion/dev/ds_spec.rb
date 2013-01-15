@@ -134,6 +134,8 @@ shared_examples_for 'Datastore' do
         [[[:data, '!=', 'one']], ['the one', 'twelve', 'twenty3', 'thirty4', 'forty4', 'forty5'], :data],
         [[[:data, 'in', ['one', 'twelve']]], ['one', 'twelve'], :data],
         [[[:data, '>', 'qux'], [:data, '<', 'qux']], [], :data],
+        [[[:data, 'like', /forty/]], ['forty4', 'forty5'], :data],
+        [[[:data, 'like', /twe/]], ['twenty3', 'twelve'], :data],
         [[[:data, '!=', 'one'], [:data, '!=', 'twelve'], [:data, '!=', 'twenty3']], ['the one', 'thirty4', 'forty4', 'forty5'], :data],
       ].each do |filters, result, field|
 
@@ -288,6 +290,7 @@ shared_examples_for 'Datastore' do
         [[[:inti, 'in', [1, 12]]], 2],
         [[[:inti, '=', 2]], 0],
         [[[:inti, '=', nil]], 1],
+        [[[:data, '~=', /twe/]], 2],
         [[[:inti, '!=', nil]], 2],
       ].each do |filters, result|
         it filters.inspect do
