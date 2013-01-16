@@ -13,7 +13,7 @@ module Hyperion
             when '='; value == filter.value
             when '!='; value != filter.value
             when 'contains?'; filter.value.include?(value)
-            when 'like?';  value =~ filter.value
+            when 'like?';  value =~ %r{#{filter.value}}
             end
           end
         end
