@@ -24,13 +24,13 @@ Hyperion Implementations:
 
 To use just the in-memory datastore...
 
-``` ruby
+```ruby
 gem 'hyperion-api'
 ```
 
 To use a specific implementation...
 
-``` ruby
+```ruby
 gem 'hyperion-postgres'
 # or
 gem 'hyperion-mysql'
@@ -44,7 +44,7 @@ gem 'hyperion-sqlite'
 
 Hyperion provides a convenient factory function for instantiating any datastore implementation
 
-``` ruby
+```ruby
 require 'hyperion'
 Hyperion.new_datastore(:memory)
 Hyperion.new_datastore(:mysql)
@@ -56,7 +56,7 @@ This will require the file "hyperion/\<impl\>" and instantiate the class Hyperio
 
 Each implementation must accept a hash of options in it's initializer
 
-``` ruby
+```ruby
 module Hyperion
   class Memory
     def initialize(opts={})
@@ -69,11 +69,11 @@ end
 
 Before you can use the Hyperion API, you must tell Hyperion which backend datastore you would like to use. There a couple of ways to go about this.
 
-#### With elegence
+#### With elegance
 
 This installs the datastore thread locally, and only within the given block.
 
-``` ruby
+```ruby
 # datastore not installed
 Hyperion.with_datastore(:postgres, options) do
   # datastore is installed
@@ -84,7 +84,7 @@ end
 
 This method is useful for applications that have control of the main thread, such as webapps. The call to with_datastore can be placed inside of a middleware, such that the datastore is installed at the beginning of the request and uninstalled after the request. For example, this is a Rack middleware which instantiates a postgres datastore, opens a pooled connection, starts a transaction and calls the next middleware.
 
-``` ruby
+```ruby
 require 'hyperion'
 require 'hyperion/sql'
 
@@ -113,13 +113,13 @@ Each of these calls could, of course, be their own separate middlewares.
 
 This installs the datastore across all threads.
 
-``` ruby
+```ruby
 Hyperion.datastore = Hyperion.new_datastore(:postgres, options)
 ```
 
 To uninstall
 
-``` ruby
+```ruby
 Hyperion.datastore = nil
 ```
 
@@ -127,21 +127,21 @@ This method is useful for when you do not have control of the main thread, such 
 
 ### Saving a value:
 
-``` ruby
+```ruby
 Hyperion.save({:kind => :foo}) #=> {:kind=>"foo", :key=>"<generated key>"}
 Hyperion.save({:kind => :foo}, :value => :bar) #=> {:kind=>"foo", :value=>:bar, :key=>"<generated key>"}
 ```
 
 ### Updating a value:
 
-``` ruby
+```ruby
 record = Hyperion.save({:kind => :foo, :name => 'Sam'})
 Hyperion.save(record, :name => 'John') #=> {:kind=>"foo", :name=>'John', :key=>"<generated key>"}
 ```
 
 ### Loading a value:
 
-``` ruby
+```ruby
 # if you have a key...
 Hyperion.find_by_key(my_key)
 
@@ -173,7 +173,7 @@ Sort orders and acceptable syntax:
 
 ### Deleting a value:
 
-``` ruby
+```ruby
 # if you have a key...
 Hyperion.delete_by_key(my_key)
 
@@ -191,7 +191,7 @@ An entity is, in essence, configuration. By defining an entity, you are telling 
 
 Only fields defined in the entity are allowed into the datastore.
 
-``` ruby
+```ruby
 Hyperion.defentity(:whitelisted) do |kind|
   kind.field(:age)
 end
@@ -204,7 +204,7 @@ Hyperion.save(kind: :whitelisted, age: 23, hair_color: 'brown')
 
 Default values can be assigned to fields.
 
-``` ruby
+```ruby
 Hyperion.defentity(:defaulted) do |kind|
   kind.field(:name)
   kind.field(:age, :default => 25)
@@ -218,7 +218,7 @@ Hyperion.save(kind: :defaulted, name: 'Myles')
 
 Packers tell Hyperion how to treat certain fields when they are being saved.
 
-``` ruby
+```ruby
 Hyperion.defentity(:packed) do |kind|
   kind.field(:age, :packer => lambda {|value| value.to_i})
 end
@@ -232,7 +232,7 @@ A packer must be callable, i.e. respond to 'call'. The current value of a field 
 
 Unpackers tell Hyperion how to treat certain fields when they are being loaded.
 
-``` ruby
+```ruby
 Hyperion.defentity(:unpacked) do |kind|
   kind.field(:age, :packer => lambda {|age| age.to_i}, :unpacker => lambda {|age| age.to_s})
 end
@@ -246,7 +246,7 @@ An unpacker must be callable, i.e. respond to 'call'. The current value of a fie
 
 Types are an easy way to share packers and unpackers between fields.
 
-``` ruby
+```ruby
 def to_int(value)
   if value
     value.to_i
@@ -275,7 +275,7 @@ Hyperion.save(kind: :typed, age: '25', name: :a_symbol)
 
 If a type is specified as well as a custom packer or unpacker, the custom packer has priority.
 
-``` ruby
+```ruby
 Hyperion.defentity(:typed_2) do |kind|
   kind.field(:age, :type => Integer, :packer => lambda {|value| 2})
 end
@@ -304,7 +304,7 @@ Since Hyperion presents every underlying datastore as a key-value store, configu
 
 This is what the coresponding `defentity` notation would be:
 
-``` ruby
+```ruby
 Hyperion.defentity(:users) do |kind|
   kind.field(:first_name)
   kind.field(:created_at)
@@ -341,7 +341,7 @@ If your schema requires foreign keys, **ALWAYS USE THE FOREIGN KEY TYPE**. If yo
 
 Clone the master branch, and run all the tests:
 
-``` bash
+```bash
 git clone git@github.com:mylesmegyesi/hyperion-ruby.git
 cd hyperion-ruby
 rake
