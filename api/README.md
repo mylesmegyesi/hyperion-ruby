@@ -147,7 +147,7 @@ Hyperion.find_by_key(my_key)
 
 # otherwise
 Hyperion.find_by_kind(:dog) # returns all records with :kind of \"dog\"
-Hyperion.find_by_kind(:dog, :filters => [[:name, '=', "Fido"]]) # returns all dogs whos name is Fido
+Hyperion.find_by_kind(:dog, :filters => [[:name, '=', "Fido"]]) # returns all dogs whose name is Fido
 Hyperion.find_by_kind(:dog, :filters => [[:age, '>', 2], [:age, '<', 5]]) # returns all dogs between the age of 2 and 5 (exclusive)
 Hyperion.find_by_kind(:dog, :sorts => [[:name, :asc]]) # returns all dogs in alphebetical order of their name
 Hyperion.find_by_kind(:dog, :sorts => [[:age, :desc], [:name, :asc]]) # returns all dogs ordered from oldest to youngest, and gos of the same age ordered by name
@@ -179,7 +179,7 @@ Hyperion.delete_by_key(my_key)
 
 # otherwise
 Hyperion.delete_by_kind(:dog) # deletes all records with :kind of "dog"
-Hyperion.delete_by_kind(:dog, :filters => [[:name, "=", "Fido"]]) # deletes all dogs whos name is Fido
+Hyperion.delete_by_kind(:dog, :filters => [[:name, "=", "Fido"]]) # deletes all dogs whose name is Fido
 Hyperion.delete_by_kind(:dog, :filters => [[:age, ">", 2], [:age, "<", 5]]) # deletes all dogs between the age of 2 and 5 (exclusive)
 ```
 
@@ -302,7 +302,7 @@ profiles:
 
 Since Hyperion presents every underlying datastore as a key-value store, configuring Hyperion to use this schema is a little tricky, but certainly possible.
 
-This is what the coresponding `defentity` notation would be:
+This is what the corresponding `defentity` notation would be:
 
 ```ruby
 Hyperion.defentity(:users) do |kind|
