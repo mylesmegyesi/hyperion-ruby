@@ -24,7 +24,7 @@ module Hyperion
 
     def find(query)
       records = store.values
-      records = filter_kind(query.kind,      records)
+      records = filter_kind(query.kind,             records)
       records = Helper.apply_filters(query.filters, records)
       records = Helper.apply_sorts(query.sorts,     records)
       records = Helper.apply_offset(query.offset,   records)
