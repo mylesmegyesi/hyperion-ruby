@@ -185,7 +185,7 @@ Hyperion.delete_by_kind(:dog, :filters => [[:age, ">", 2], [:age, "<", 5]]) # de
 
 ### Entities
 
-An entity is, in essence, configuration. By defining an entity, you are telling Hyperion how to save ('pack') and load ('unpack') a specific kind. Defining entites is not required or nessecary in some cases. Hyperion will work just fine without them. However, they offer some very clear advantages.
+An entity is, in essence, configuration. By defining an entity, you are telling Hyperion how to save ('pack') and load ('unpack') a specific kind. Defining entites is not required or necessary in some cases. Hyperion will work just fine without them. However, they offer some very clear advantages.
 
 #### Whitelisting
 
