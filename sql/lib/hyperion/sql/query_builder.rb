@@ -103,6 +103,9 @@ module Hyperion
             filter_sql << "#{column} IN ?"
           end
           filter_values << filter.value
+        elsif filter.operator == 'like?'
+          filter_sql << "#{column} LIKE ?"
+          filter_values << "%#{filter.value}%"
         elsif filter.operator == '=' && filter.value.nil?
           filter_sql << "#{column} IS NULL"
         else

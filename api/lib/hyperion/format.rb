@@ -48,6 +48,8 @@ module Hyperion
           '>='
         when 'contains?', 'contains', 'in?', 'in'
           'contains?'
+        when 'like?', 'like', "~="
+          'like?'
         end
       end
 
